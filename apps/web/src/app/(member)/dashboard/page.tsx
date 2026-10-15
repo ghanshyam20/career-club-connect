@@ -1,6 +1,11 @@
 
 "use client";
-import Link from "next/link";
+
+import MemberAvatar from "@/components/MemberAvatar";
+import DashboardFeatureCards from "@/components/DashboardFeatureCards";
+import DashboardHighlight from "@/components/DashboardHighlight";
+
+import "./dashboard.css";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -109,41 +114,62 @@ async function handleLogout() {
   return (
     <>
       
-      <main 
+      <main className="dashboard-page">
+      
+      
+      
+  <header
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 20,
+    padding: 24,
+    background: "#ffffff",
+    border: "1px solid #dce4ed",
+    borderRadius: 18,
+    boxShadow: "0 8px 24px rgba(16, 43, 78, 0.06)",
+  }}
+>
+
+  <div>
+    <p
       style={{
-        maxWidth:1000,
-        margin:"40px auto",
-        padding:24,
+        margin: "0 0 8px",
+        color: "#1769e0",
+        fontSize: 13,
+        fontWeight: 700,
+        letterSpacing: 1,
       }}
-      >
-      <h1>
-        Welcome, {member.first_name || member.username}!
-      </h1>
+    >
+      CAREER CLUB CONNECT
+    </p>
 
-      <p>You&apos;re logged in to Career Club Connect.</p>
+    <h1 style={{ margin: "0 0 8px" }}>
+      Welcome back, {member.first_name || member.username}!
+    </h1>
 
-      <section style={{ marginTop: 32 }}>
-        <h2>Your profile</h2>
-        <p><strong>Username:</strong> {member.username}</p>
-        <p><strong>Email:</strong> {member.email}</p>
-        <p style={{ marginTop: 16 }}>
-            <Link href="/profile">Edit my Career Club profile →</Link>
-        </p>
-      </section>
+    <p style={{ margin: 0, color: "#5c6b7c" }}>
+      Connect, share experiences, and take your next career step.
+    </p>
+  </div>
 
-      <section style={{ marginTop: 32 }}>
-        <h2>Experience Library</h2>
-        <p>Read other members&apos; experiences or share your own.</p>
-        <Link href="/experiences">Open Experience Library →</Link>
-    </section>
+  <MemberAvatar
+    name={
+      [member.first_name, member.last_name]
+        .filter(Boolean)
+        .join(" ") || member.username
+    }
+    size={72}
+  />
+</header>
 
-      <section style={{ marginTop: 32 }}>
-        <h2>Coming next</h2>
-        <p>
-          Career experiences, community discussions, Coffee Buddy,
-          and personal career actions.
-        </p>
-      </section>
+<DashboardFeatureCards />
+<DashboardHighlight />
+
+
+
 
 <button
   type="button"
