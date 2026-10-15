@@ -1,6 +1,6 @@
 
 "use client";
-
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -118,6 +118,9 @@ async function handleLogout() {
         <h2>Your profile</h2>
         <p><strong>Username:</strong> {member.username}</p>
         <p><strong>Email:</strong> {member.email}</p>
+        <p style={{ marginTop: 16 }}>
+            <Link href="/profile">Edit my Career Club profile →</Link>
+        </p>
       </section>
 
       <section style={{ marginTop: 32 }}>
