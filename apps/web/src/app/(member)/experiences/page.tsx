@@ -1,5 +1,5 @@
-
 "use client";
+import "./experiences.css";
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
@@ -31,9 +31,9 @@ function categoryLabel(value: string) {
 export default function ExperiencesPage() {
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<
-    "explore" | "mine" | "share"
-  >("explore");
+  const [activeTab, setActiveTab] = useState<"explore" | "mine" | "share">(
+    "explore",
+  );
 
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [myExperiences, setMyExperiences] = useState<Experience[]>([]);
@@ -87,9 +87,7 @@ export default function ExperiencesPage() {
         }
       } catch (err) {
         if (active) {
-          setError(
-            err instanceof Error ? err.message : "Connection error."
-          );
+          setError(err instanceof Error ? err.message : "Connection error.");
         }
       } finally {
         if (active) setLoading(false);
@@ -148,7 +146,7 @@ export default function ExperiencesPage() {
             ? Object.entries(details)
                 .map(([key, value]) => `${key}: ${String(value)}`)
                 .join("; ")
-            : "Could not submit experience."
+            : "Could not submit experience.",
         );
       }
 
@@ -162,9 +160,7 @@ export default function ExperiencesPage() {
       setActiveTab("mine");
       setSuccess("Experience submitted. Waiting for moderator review.");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Something went wrong."
-      );
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setSaving(false);
     }
@@ -188,24 +184,24 @@ export default function ExperiencesPage() {
   };
 
   const filteredExperiences = experiences.filter((experience) => {
-  const query = searchQuery.trim().toLowerCase();
+    const query = searchQuery.trim().toLowerCase();
 
-  const matchesSearch =
-    experience.title.toLowerCase().includes(query) ||
-    experience.content.toLowerCase().includes(query);
+    const matchesSearch =
+      experience.title.toLowerCase().includes(query) ||
+      experience.content.toLowerCase().includes(query);
 
-  const matchesCategory =
-    categoryFilter === "all" || experience.category === categoryFilter;
+    const matchesCategory =
+      categoryFilter === "all" || experience.category === categoryFilter;
 
-  return matchesSearch && matchesCategory;
-});
+    return matchesSearch && matchesCategory;
+  });
 
   if (loading) {
     return <main style={{ padding: 32 }}>Loading experiences...</main>;
   }
 
   return (
-    <main style={{ maxWidth: 850, margin: "40px auto", padding: 24 }}>
+    <main className="experiences-page">
       <Link href="/dashboard">← Back to dashboard</Link>
 
       <h1 style={{ marginTop: 24 }}>Experience Library</h1>
@@ -258,45 +254,36 @@ export default function ExperiencesPage() {
       {activeTab === "explore" && (
         <section style={{ marginTop: 28 }}>
           <h2>Approved experiences</h2>
-          <div
-  style={{
-    display: "flex",
-    gap: 12,
-    flexWrap: "wrap",
-    marginBottom: 24,
-  }}
->
-  <input
-    type="search"
-    aria-label="Search experiences"
-    placeholder="Search experiences..."
-    value={searchQuery}
-    onChange={(event) => setSearchQuery(event.target.value)}
-    style={{
-      ...fieldStyle,
-      flex: "2 1 250px",
-      margin: 0,
-    }}
-  />
+          <div className="experiences-filters">
+            <input
+              type="search"
+              aria-label="Search experiences"
+              placeholder="Search experiences..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              style={{
+                ...fieldStyle,
+                margin: 0,
+              }}
+            />
 
-  <select
-    aria-label="Filter experiences by category"
-    value={categoryFilter}
-    onChange={(event) => setCategoryFilter(event.target.value)}
-    style={{
-      ...fieldStyle,
-      flex: "1 1 180px",
-      margin: 0,
-    }}
-  >
-    <option value="all">All categories</option>
-    {categories.map((item) => (
-      <option key={item.value} value={item.value}>
-        {item.label}
-      </option>
-    ))}
-  </select>
-</div>
+            <select
+              aria-label="Filter experiences by category"
+              value={categoryFilter}
+              onChange={(event) => setCategoryFilter(event.target.value)}
+              style={{
+                ...fieldStyle,
+                margin: 0,
+              }}
+            >
+              <option value="all">All categories</option>
+              {categories.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {experiences.length === 0 && (
             <p>No approved experiences yet. Check back later.</p>
@@ -307,15 +294,26 @@ export default function ExperiencesPage() {
           )}
 
           {filteredExperiences.map((experience) => (
-            <article key={experience.id} style={cardStyle}>
-              <h3>{experience.title}</h3>
-              <p>
-                {categoryLabel(experience.category)} · By{" "}
-                {experience.author_name}
-              </p>
-              <p style={{ whiteSpace: "pre-wrap" }}>
-                {experience.content}
-              </p>
+            <article key={experience.id} className="experiences-card">
+              <span className="experiences-category">
+                {categoryLabel(experience.category)}
+              </span>
+
+              <h3 style={{ marginTop: 14 }}>{experience.title}</h3>
+
+              <div className="experiences-meta">
+                <span>By {experience.author_name}</span>
+                <span aria-hidden="true">·</span>
+                <time dateTime={experience.created_at}>
+                  {new Date(experience.created_at).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </time>
+              </div>
+
+              <p style={{ whiteSpace: "pre-wrap" }}>{experience.content}</p>
             </article>
           ))}
         </section>
@@ -336,9 +334,7 @@ export default function ExperiencesPage() {
                 {categoryLabel(experience.category)} · Status:{" "}
                 <strong>{experience.status}</strong>
               </p>
-              <p style={{ whiteSpace: "pre-wrap" }}>
-                {experience.content}
-              </p>
+              <p style={{ whiteSpace: "pre-wrap" }}>{experience.content}</p>
             </article>
           ))}
         </section>
@@ -387,9 +383,7 @@ export default function ExperiencesPage() {
               style={fieldStyle}
             />
 
-            <label
-              style={{ display: "flex", gap: 10, alignItems: "center" }}
-            >
+            <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
               <input
                 type="checkbox"
                 checked={anonymous}

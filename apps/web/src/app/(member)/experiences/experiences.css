@@ -1,0 +1,124 @@
+/* Career Club Connect — Experience Library */
+
+.experiences-page {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 0 40px;
+  color: #102b4e;
+}
+
+.experiences-page h1 {
+  margin: 16px 0 10px;
+  font-size: 30px;
+  color: #102b4e;
+}
+
+.experiences-page h2 {
+  margin: 0 0 18px;
+  font-size: 22px;
+  color: #102b4e;
+}
+
+.experiences-description {
+  color: #5c6b7c;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.experiences-card {
+  padding: 24px;
+  margin-bottom: 16px;
+  background: #ffffff;
+  border: 1px solid #dce4ed;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(16, 43, 78, 0.04);
+}
+
+.experiences-card h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: #102b4e;
+}
+
+.experiences-card p {
+  line-height: 1.65;
+}
+
+.experiences-card:hover {
+  border-color: #b8cde9;
+  box-shadow: 0 8px 24px rgba(16, 43, 78, 0.07);
+}
+
+.experiences-category {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 11px;
+  border-radius: 20px;
+  background: #eaf1ff;
+  color: #1769e0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.experiences-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.experiences-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+
+
+.experiences-filters input,
+.experiences-filters select {
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #dce4ed;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #102b4e;
+  font: inherit;
+  width: 100%;
+  height: 46px;
+  box-sizing: border-box;
+}
+
+.experiences-filters input:focus,
+.experiences-filters select:focus {
+  outline: 2px solid #1769e0;
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .experiences-page {
+    padding: 8px 0 24px;
+  }
+
+  .experiences-page h1 {
+    font-size: 25px;
+  }
+
+  .experiences-page h2 {
+    font-size: 20px;
+  }
+
+  .experiences-card {
+    padding: 18px;
+  }
+
+ .experiences-filters {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+}
