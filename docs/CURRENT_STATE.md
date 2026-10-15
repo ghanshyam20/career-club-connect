@@ -36,6 +36,13 @@
 - Django admin supports experience moderation
 - Anonymous publishing option
 
+### Experience Library search and filtering
+- Search approved experiences by title or content
+- Filter approved experiences by category
+- Combine search and category filters
+- Show a message when no experiences match
+- Keep My Submissions and Share Experience separate from the filters
+
 ### Dashboard and navigation
 - Responsive member dashboard
 - Shared sidebar navigation
@@ -46,7 +53,7 @@
 
 ## 3. Features not yet completed
 
-- Experience search and category filters
+
 - Structured experience detail pages, helpful reactions and bookmarks
 - Community Forum and comments
 - Coffee Buddy member matching and requests
@@ -71,6 +78,9 @@ Previously verified:
 - Dashboard highlight displaying an approved experience
 - Frontend TypeScript and ESLint checks passed during development
 - Backend authentication, profile and Experience Library tests passed during their respective milestones
+- Experience Library search tested in browser
+- Search no-results message verified
+- Frontend TypeScript and ESLint checks passed after search/filter changes
 
 **Before the next commit:** Rerun frontend checks and confirm the latest dashboard changes pass.
 

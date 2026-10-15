@@ -39,6 +39,8 @@ export default function ExperiencesPage() {
   const [myExperiences, setMyExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("interview");
@@ -185,6 +187,19 @@ export default function ExperiencesPage() {
     boxSizing: "border-box" as const,
   };
 
+  const filteredExperiences = experiences.filter((experience) => {
+  const query = searchQuery.trim().toLowerCase();
+
+  const matchesSearch =
+    experience.title.toLowerCase().includes(query) ||
+    experience.content.toLowerCase().includes(query);
+
+  const matchesCategory =
+    categoryFilter === "all" || experience.category === categoryFilter;
+
+  return matchesSearch && matchesCategory;
+});
+
   if (loading) {
     return <main style={{ padding: 32 }}>Loading experiences...</main>;
   }
@@ -243,12 +258,55 @@ export default function ExperiencesPage() {
       {activeTab === "explore" && (
         <section style={{ marginTop: 28 }}>
           <h2>Approved experiences</h2>
+          <div
+  style={{
+    display: "flex",
+    gap: 12,
+    flexWrap: "wrap",
+    marginBottom: 24,
+  }}
+>
+  <input
+    type="search"
+    aria-label="Search experiences"
+    placeholder="Search experiences..."
+    value={searchQuery}
+    onChange={(event) => setSearchQuery(event.target.value)}
+    style={{
+      ...fieldStyle,
+      flex: "2 1 250px",
+      margin: 0,
+    }}
+  />
+
+  <select
+    aria-label="Filter experiences by category"
+    value={categoryFilter}
+    onChange={(event) => setCategoryFilter(event.target.value)}
+    style={{
+      ...fieldStyle,
+      flex: "1 1 180px",
+      margin: 0,
+    }}
+  >
+    <option value="all">All categories</option>
+    {categories.map((item) => (
+      <option key={item.value} value={item.value}>
+        {item.label}
+      </option>
+    ))}
+  </select>
+</div>
 
           {experiences.length === 0 && (
             <p>No approved experiences yet. Check back later.</p>
           )}
 
-          {experiences.map((experience) => (
+          {experiences.length > 0 && filteredExperiences.length === 0 && (
+            <p>No experiences match your search or selected category.</p>
+          )}
+
+          {filteredExperiences.map((experience) => (
             <article key={experience.id} style={cardStyle}>
               <h3>{experience.title}</h3>
               <p>
