@@ -124,6 +124,12 @@ async function handleLogout() {
       </section>
 
       <section style={{ marginTop: 32 }}>
+        <h2>Experience Library</h2>
+        <p>Read other members&apos; experiences or share your own.</p>
+        <Link href="/experiences">Open Experience Library →</Link>
+    </section>
+
+      <section style={{ marginTop: 32 }}>
         <h2>Coming next</h2>
         <p>
           Career experiences, community discussions, Coffee Buddy,
