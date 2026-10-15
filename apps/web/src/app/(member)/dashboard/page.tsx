@@ -107,7 +107,15 @@ async function handleLogout() {
   }
 
   return (
-    <main style={{ maxWidth: 800, margin: "60px auto", padding: 24 }}>
+    <>
+      
+      <main 
+      style={{
+        maxWidth:1000,
+        margin:"40px auto",
+        padding:24,
+      }}
+      >
       <h1>
         Welcome, {member.first_name || member.username}!
       </h1>
@@ -151,5 +159,6 @@ async function handleLogout() {
 </button>
 
     </main>
+    </>
   );
 }

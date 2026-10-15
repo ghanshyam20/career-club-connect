@@ -1,8 +1,136 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: #f6f9fc; color: #17253b; font: 16px/1.6 system-ui, sans-serif; }
-main { max-width: 780px; margin: 64px auto; padding: 32px; background: white; border: 1px solid #dce4ed; border-radius: 12px; }
+main {
+  width: 100%;
+  min-width: 0;
+}
 h1 { color: #102b4e; line-height: 1.2; }
 button { background: #1769e0; color: white; border: 0; padding: 12px 18px; border-radius: 8px; font: inherit; cursor: pointer; }
 button:focus-visible { outline: 3px solid #102b4e; outline-offset: 3px; }
 small { color: #5c6b7c; }
 pre { overflow-x: auto; padding: 12px; background: #eef4fc; }
+
+/* Career Club Connect — Design System */
+
+:root {
+  --color-primary: #1769e0;
+  --color-primary-dark: #1053b8;
+  --color-navy: #102b4e;
+  --color-text: #17253b;
+  --color-muted: #5c6b7c;
+  --color-background: #f6f9fc;
+  --color-surface: #ffffff;
+  --color-border: #dce4ed;
+  --color-success: #059669;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  --shadow-card: 0 8px 24px rgba(16, 43, 78, 0.06);
+}
+
+/* Reusable layout */
+
+.app-container {
+  width: min(100% - 32px, 1120px);
+  margin-inline: auto;
+}
+
+.app-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+}
+
+/* Reusable buttons */
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  border: 1px solid var(--color-primary);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-dark);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: var(--color-navy);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: #eef4fc;
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible {
+  outline: 3px solid var(--color-navy);
+  outline-offset: 3px;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mobile adjustments */
+
+@media (max-width: 640px) {
+  .app-card {
+    padding: 18px;
+    border-radius: var(--radius-md);
+  }
+
+  .app-container {
+    width: min(100% - 24px, 1120px);
+  }
+}
+
+
+/* Shared member layout */
+
+.member-shell {
+  min-height: 100vh;
+}
+
+.member-content {
+  min-width: 0;
+  margin-left: 238px;
+  padding: 24px;
+}
+
+.member-content > main {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .member-content {
+    margin-left: 0;
+    padding: 16px 12px 100px;
+  }
+
+  .member-content > main {
+    max-width: 100%;
+  }
+}
