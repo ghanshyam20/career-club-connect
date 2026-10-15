@@ -166,12 +166,7 @@ export default function ExperiencesPage() {
     }
   }
 
-  const cardStyle = {
-    padding: 20,
-    border: "1px solid #ddd",
-    borderRadius: 12,
-    marginBottom: 16,
-  };
+  
 
   const fieldStyle = {
     width: "100%",
@@ -328,12 +323,31 @@ export default function ExperiencesPage() {
           )}
 
           {myExperiences.map((experience) => (
-            <article key={experience.id} style={cardStyle}>
-              <h3>{experience.title}</h3>
-              <p>
-                {categoryLabel(experience.category)} · Status:{" "}
-                <strong>{experience.status}</strong>
-              </p>
+            <article key={experience.id} className="experiences-card">
+              <div className="submission-card-header">
+                <span className="experiences-category">
+                  {categoryLabel(experience.category)}
+                </span>
+
+                <span
+                  className={`submission-status status-${experience.status}`}
+                >
+                  {experience.status}
+                </span>
+              </div>
+
+              <h3 style={{ marginTop: 16 }}>{experience.title}</h3>
+
+              <div className="experiences-meta">
+                <time dateTime={experience.created_at}>
+                  {new Date(experience.created_at).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </time>
+              </div>
+
               <p style={{ whiteSpace: "pre-wrap" }}>{experience.content}</p>
             </article>
           ))}
@@ -345,7 +359,7 @@ export default function ExperiencesPage() {
           <h2>Share your experience</h2>
           <p>Submissions are reviewed before appearing in the library.</p>
 
-          <form onSubmit={handleSubmit}>
+         <form onSubmit={handleSubmit} className="experience-share-form">
             <label htmlFor="experience-title">Title</label>
             <input
               id="experience-title"
@@ -354,7 +368,7 @@ export default function ExperiencesPage() {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Example: My first interview in Finland"
-              style={fieldStyle}
+              
             />
 
             <label htmlFor="experience-category">Category</label>
@@ -362,7 +376,7 @@ export default function ExperiencesPage() {
               id="experience-category"
               value={category}
               onChange={(event) => setCategory(event.target.value)}
-              style={fieldStyle}
+             
             >
               {categories.map((item) => (
                 <option key={item.value} value={item.value}>
@@ -380,7 +394,7 @@ export default function ExperiencesPage() {
               value={content}
               onChange={(event) => setContent(event.target.value)}
               placeholder="What happened? What did you learn?"
-              style={fieldStyle}
+              
             />
 
             <label style={{ display: "flex", gap: 10, alignItems: "center" }}>

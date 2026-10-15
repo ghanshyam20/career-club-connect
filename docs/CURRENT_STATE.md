@@ -82,17 +82,20 @@ Previously verified:
 - Search no-results message verified
 - Frontend TypeScript and ESLint checks passed after search/filter changes
 
-**Before the next commit:** Rerun frontend checks and confirm the latest dashboard changes pass.
+## 10. Next action
+
+Finish verifying the Experience Library improvements, update project documentation, and commit and push the changes to GitHub.
+
+Next major feature: Community Forum.
+
+Update this file after each completed development milestone.
 
 ## 5. Current uncommitted work
 
-- `README.md` — updated project description
-- `apps/web/src/app/(member)/dashboard/page.tsx` — updated dashboard
-- `apps/web/src/app/(member)/dashboard/dashboard.css` — dashboard styles
-- `apps/web/src/components/DashboardFeatureCards.tsx` — feature cards
-- `apps/web/src/components/DashboardHighlight.tsx` — API-powered highlight
-- `apps/web/src/components/MemberAvatar.tsx` — member avatar
-- `docs/CURRENT_STATE.md` — updated development record
+- `apps/web/src/app/(member)/experiences/page.tsx` — improved My Submissions and Share Experience presentation
+- `apps/web/src/app/(member)/experiences/experiences.css` — responsive styling for Experience Library sections
+
+The earlier dashboard and Experience Library search/filter improvements have already been committed and pushed to GitHub.
 
 ## 6. Important project decisions
 
@@ -105,14 +108,14 @@ Previously verified:
 
 ## 7. Next development steps
 
-1. Commit and push the current dashboard and documentation improvements.
-2. Add Experience Library search and category filtering.
-3. Improve experience details and the member-facing UI.
-4. Implement Community Forum.
-5. Implement Coffee Buddy.
-6. Implement My Career Actions.
-7. Add member discovery, saved items and notifications.
-8. Complete responsive UI, accessibility, security and deployment testing.
+1. Complete final Experience Library checks and commit the latest changes.
+2. Implement the Community Forum with discussion posts and replies.
+3. Implement Coffee Buddy member matching and requests.
+4. Implement My Career Actions and progress tracking.
+5. Add structured experience detail pages, helpful reactions and bookmarks.
+6. Add member discovery, saved items and notifications.
+7. Complete responsive UI, accessibility, privacy, security and deployment testing.
+
 
 ## 8. Local development
 
@@ -135,6 +138,8 @@ Refer to `docs/SETUP_UBUNTU.md` for installation and startup instructions.
 
 ## 10. Next action
 
-Verify the latest frontend changes, commit the dashboard and documentation updates, and then continue with Experience Library search and filtering.
+Finish verifying the Experience Library improvements, update project documentation, and commit and push the changes to GitHub.
 
-Update this file after the next completed development milestone.
+Next major feature: Community Forum.
+
+Update this file after each completed development milestone.

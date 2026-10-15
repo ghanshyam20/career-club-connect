@@ -19,18 +19,24 @@ This is an independent project and is not officially endorsed by the City of Esp
 - Session-based authentication and CSRF protection
 - Member profile creation and editing
 - Experience Library with submissions and approval-based moderation
+- Experience Library search by title or content and category filtering
+- My Submissions with moderation status and category badges
+- Share Experience form with optional anonymous publishing
+- Responsive Experience Library layout for desktop and mobile
 - Member dashboard with navigation and feature cards
 - Dashboard highlight displaying an approved experience from the API
 - Responsive dashboard styling
 
+
 ## Features under development
 
-- Experience Library search, filters and improved experience details
-- Community Forum with posts and comments
+- Community Forum with discussion posts and replies
 - Coffee Buddy networking between Career Club rounds
 - My Career Actions for goals and progress tracking
+- Structured experience detail pages, reactions and bookmarks
 - Member discovery, notifications and saved items
 - Further mobile UI improvements and accessibility testing
+- Privacy, security and production deployment
 
 ## Local setup
 
