@@ -8,7 +8,7 @@ import "./AppNavigation.css";
 const navigation = [
   { label: "Home", href: "/dashboard", icon: "⌂" },
   { label: "Explore", href: "/experiences", icon: "⌕" },
-  { label: "Community", href: null, icon: "▤" },
+  { label: "Community", href: "/community", icon: "▤" },
   { label: "Coffee Buddy", href: null, icon: "☕" },
   { label: "My Actions", href: null, icon: "☑" },
   { label: "Profile", href: "/profile", icon: "♙" },
