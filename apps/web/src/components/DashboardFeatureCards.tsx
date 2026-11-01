@@ -42,7 +42,7 @@ export default function DashboardFeatureCards() {
           </div>
           <h3>My Career Actions</h3>
           <p>Set goals, plan next steps and track your progress.</p>
-          <span className="dashboard-coming-soon">Coming soon</span>
+          <Link href="/my-actions">Manage my actions →</Link>
         </article>
       </div>
     </section>
