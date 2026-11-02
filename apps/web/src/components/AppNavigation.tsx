@@ -14,6 +14,7 @@ const navigation = [
   { label: "Notifications", href: "/notifications", icon: "♧" },
   { label: "My Actions", href: "/my-actions", icon: "☑" },
   { label: "Profile", href: "/profile", icon: "♙" },
+  { label: "Settings", href: "/settings", icon: "⚙" },
 ];
 
 export default function AppNavigation() {
