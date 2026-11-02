@@ -9,7 +9,7 @@ const navigation = [
   { label: "Home", href: "/dashboard", icon: "⌂" },
   { label: "Explore", href: "/experiences", icon: "⌕" },
   { label: "Community", href: "/community", icon: "▤" },
-  { label: "Coffee Buddy", href: null, icon: "☕" },
+  { label: "Coffee Buddy", href: "/coffee-buddy", icon: "☕" },
   { label: "My Actions", href: "/my-actions", icon: "☑" },
   { label: "Profile", href: "/profile", icon: "♙" },
 ];

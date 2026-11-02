@@ -33,7 +33,7 @@ export default function DashboardFeatureCards() {
           </div>
           <h3>Coffee Buddy</h3>
           <p>Connect with members from different Career Club rounds.</p>
-          <span className="dashboard-coming-soon">Coming soon</span>
+          <Link href="/coffee-buddy">Find a coffee buddy →</Link>
         </article>
 
         <article className="dashboard-feature-card">
