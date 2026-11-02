@@ -5,6 +5,7 @@ from django.urls import include, path
 from health.views import live, ready
 
 urlpatterns = [
+    path("api/v1/moderation/", include("moderation.urls")),
     path("api/v1/notifications/", include("notifications.urls")),
     path("api/v1/search/", include("search.urls")),
     path("api/v1/coffee-buddy/", include("coffee_buddy.urls")),

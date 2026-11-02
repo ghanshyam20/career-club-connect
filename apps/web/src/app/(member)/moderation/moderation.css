@@ -1,0 +1,124 @@
+.moderation-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 36px 24px 70px;
+}
+
+.moderation-heading h1 {
+  margin: 0 0 10px;
+  color: #102b50;
+  font-size: 30px;
+}
+
+.moderation-heading p,
+.moderation-author,
+.moderation-card small {
+  color: #64748b;
+}
+
+.moderation-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0;
+}
+
+.moderation-summary strong {
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #e8f0ff;
+  color: #1967df;
+  font-size: 22px;
+}
+
+.moderation-list {
+  display: grid;
+  gap: 18px;
+}
+
+.moderation-card,
+.moderation-empty {
+  background: white;
+  border: 1px solid #dce5f0;
+  border-radius: 16px;
+  padding: 26px;
+}
+
+.moderation-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.moderation-category {
+  background: #e8f0ff;
+  color: #1967df;
+  padding: 7px 12px;
+  border-radius: 20px;
+  text-transform: capitalize;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.moderation-card h2 {
+  margin: 20px 0 8px;
+  color: #102b50;
+  font-size: 21px;
+}
+
+.moderation-content {
+  color: #334155;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.moderation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.moderation-actions button {
+  padding: 11px 20px;
+  border-radius: 9px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.moderation-approve {
+  background: #176b42;
+  border: 1px solid #176b42;
+  color: white;
+}
+
+.moderation-reject {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #b42318;
+}
+
+.moderation-actions button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.moderation-empty {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.moderation-empty h2 {
+  color: #102b50;
+}
+
+.moderation-error { color: #b42318; }
+.moderation-success { color: #176b42; }
+
+@media (max-width: 600px) {
+  .moderation-page { padding: 24px 16px; }
+  .moderation-card { padding: 18px; }
+  .moderation-actions button { flex: 1; }
+}

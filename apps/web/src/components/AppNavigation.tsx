@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import "./AppNavigation.css";
 
@@ -17,6 +18,37 @@ const navigation = [
 
 export default function AppNavigation() {
   const pathname = usePathname();
+  const [isModerator, setIsModerator] = useState(false);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const response = await fetch("/api/v1/auth/me/", {
+          credentials: "same-origin",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          setIsModerator(false);
+          return;
+        }
+
+        const user: { is_staff?: boolean } = await response.json();
+        setIsModerator(user.is_staff === true);
+      } catch {
+        setIsModerator(false);
+      }
+    };
+
+    void checkRole();
+  }, [pathname]);
+
+  const visibleNavigation = isModerator
+    ? [
+        ...navigation,
+        { label: "Moderator", href: "/moderation", icon: "⚙" },
+      ]
+    : navigation;
 
   return (
     <>
@@ -30,7 +62,7 @@ export default function AppNavigation() {
         </Link>
 
         <nav className="app-nav-links">
-          {navigation.map((item) => {
+          {visibleNavigation.map((item) => {
             const active = item.href === pathname;
 
             return item.href ? (
@@ -64,7 +96,7 @@ export default function AppNavigation() {
       </aside>
 
       <nav className="app-bottom-nav" aria-label="Mobile navigation">
-        {navigation.map((item) => {
+        {visibleNavigation.map((item) => {
           const active = item.href === pathname;
 
           return item.href ? (
