@@ -4,6 +4,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
+from notifications.models import Notification
 from .models import CoffeeInvitation
 from .serializers import CoffeeInvitationSerializer
 
@@ -51,6 +52,12 @@ def accept_invitation(request, pk):
         invitation.accepted_by = request.user
         invitation.status = CoffeeInvitation.Status.ACCEPTED
         invitation.save()
+
+        Notification.objects.create(
+            recipient=invitation.creator,
+            message=f"{request.user.username} accepted your coffee invitation: {invitation.topic}",
+            link="/coffee-buddy",
+        )
 
     return Response(CoffeeInvitationSerializer(invitation).data)
 

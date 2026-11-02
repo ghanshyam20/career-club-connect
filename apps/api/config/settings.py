@@ -10,7 +10,7 @@ ALLOWED_HOSTS = [h.strip() for h in os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1
 INSTALLED_APPS = [
     'django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes',
     'django.contrib.sessions', 'django.contrib.messages', 'django.contrib.staticfiles',
-    'rest_framework', 'accounts', 'health','profiles','experiences',"forum",'career_actions', 'coffee_buddy',
+    'rest_framework', 'accounts', 'health','profiles','experiences',"forum",'career_actions', 'coffee_buddy', 'notifications',
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
