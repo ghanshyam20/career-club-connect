@@ -104,3 +104,124 @@ class MemberProfileTests(APITestCase):
             response.status_code,
             status.HTTP_400_BAD_REQUEST,
         )
+
+
+class MemberDetailTests(APITestCase):
+    def setUp(self):
+        from experiences.models import Experience
+        from forum.models import CommunityPost
+
+        self.Experience = Experience
+
+        self.viewer = User.objects.create_user(
+            username="current_member",
+            password="TestPassword123!",
+        )
+
+        self.alumni = User.objects.create_user(
+            username="previous_member",
+            first_name="Aino",
+            last_name="Korhonen",
+            password="TestPassword123!",
+        )
+
+        MemberProfile.objects.create(
+            user=self.alumni,
+            career_club_round=8,
+            bio="Data analyst interested in career development.",
+            skills="Python, SQL, Power BI",
+            career_interests="Data analytics",
+        )
+
+        self.approved = Experience.objects.create(
+            author=self.alumni,
+            title="My Python portfolio",
+            category=Experience.Category.INTERVIEW,
+            content="I built a portfolio with Python and SQL.",
+            status=Experience.Status.APPROVED,
+        )
+
+        Experience.objects.create(
+            author=self.alumni,
+            title="Private anonymous experience",
+            category=Experience.Category.OTHER,
+            content="Anonymous career advice.",
+            status=Experience.Status.APPROVED,
+            publish_anonymously=True,
+        )
+
+        Experience.objects.create(
+            author=self.alumni,
+            title="Pending experience",
+            category=Experience.Category.OTHER,
+            content="Waiting for moderation.",
+            status=Experience.Status.PENDING,
+        )
+
+        Experience.objects.create(
+            author=self.alumni,
+            title="Rejected experience",
+            category=Experience.Category.OTHER,
+            content="Rejected by moderator.",
+            status=Experience.Status.REJECTED,
+        )
+
+        CommunityPost.objects.create(
+            author=self.alumni,
+            category="career_advice",
+            content="Build small practical projects.",
+        )
+
+        self.url = reverse(
+            "member-detail",
+            kwargs={"pk": self.alumni.pk},
+        )
+
+    def test_anonymous_user_cannot_view_member(self):
+        response = self.client.get(self.url)
+        self.assertIn(response.status_code, [401, 403])
+
+    def test_previous_round_profile_is_visible(self):
+        self.client.force_authenticate(user=self.viewer)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["name"], "Aino Korhonen")
+        self.assertEqual(response.data["career_club_round"], 8)
+        self.assertIn("Python", response.data["skills"])
+
+    def test_only_public_approved_experiences_appear(self):
+        self.client.force_authenticate(user=self.viewer)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+
+        titles = [
+            item["title"]
+            for item in response.data["experiences"]
+        ]
+
+        self.assertEqual(titles, ["My Python portfolio"])
+
+    def test_community_contributions_appear(self):
+        self.client.force_authenticate(user=self.viewer)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["posts"]), 1)
+        self.assertEqual(
+            response.data["posts"][0]["content"],
+            "Build small practical projects.",
+        )
+
+    def test_unknown_member_returns_404(self):
+        self.client.force_authenticate(user=self.viewer)
+
+        response = self.client.get(
+            reverse("member-detail", kwargs={"pk": 999999})
+        )
+
+        self.assertEqual(response.status_code, 404)

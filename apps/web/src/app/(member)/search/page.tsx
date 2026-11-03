@@ -106,7 +106,7 @@ export default function SearchPage() {
                 <article className="search-card" key={member.id}>
                   <h3>{member.name}</h3>
                   <p>@{member.username}</p>
-                  <Link href="/profiles">Explore member profiles</Link>
+                  <Link href={`/members/${member.id}`}>View participant profile</Link>
                 </article>
               ))}
               {results.members.length === 0 && <p>No matching members.</p>}

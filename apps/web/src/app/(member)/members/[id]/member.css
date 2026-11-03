@@ -1,0 +1,141 @@
+.member-detail {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 36px 24px 90px;
+  color: #102b50;
+}
+
+.member-back {
+  display: inline-block;
+  margin-bottom: 26px;
+  color: #1967df;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.member-hero,
+.member-section {
+  background: #fff;
+  border: 1px solid #dce5f0;
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 18px;
+}
+
+.member-hero {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.member-avatar {
+  width: 78px;
+  height: 78px;
+  border-radius: 22px;
+  background: #e8f0ff;
+  color: #1967df;
+  display: grid;
+  place-items: center;
+  font-size: 32px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.member-hero h1 {
+  margin: 0 0 6px;
+  font-size: 29px;
+}
+
+.member-username {
+  margin: 0 0 14px;
+  color: #64748b;
+}
+
+.member-round {
+  display: inline-block;
+  padding: 7px 12px;
+  background: #e8f0ff;
+  color: #1967df;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.member-section h2 {
+  margin: 0 0 18px;
+  font-size: 21px;
+}
+
+.member-section p {
+  color: #475569;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.member-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.member-skills span,
+.member-content-category {
+  background: #edf3ff;
+  color: #1967df;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.member-content-list {
+  display: grid;
+  gap: 14px;
+}
+
+.member-content-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.member-content-card h3 {
+  margin: 18px 0 8px;
+  font-size: 17px;
+}
+
+.member-content-card p {
+  margin-bottom: 0;
+}
+
+.member-content-category {
+  display: inline-block;
+  text-transform: capitalize;
+}
+
+@media (max-width: 600px) {
+  .member-detail {
+    padding: 22px 16px 90px;
+  }
+
+  .member-hero,
+  .member-section {
+    padding: 20px;
+  }
+
+  .member-hero {
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .member-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+    border-radius: 16px;
+  }
+
+  .member-hero h1 {
+    font-size: 23px;
+  }
+}
