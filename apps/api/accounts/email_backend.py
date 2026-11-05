@@ -1,9 +1,7 @@
 
-import json
 import os
-from urllib.request import Request, urlopen
-from urllib.error import HTTPError, URLError
 
+import requests
 from django.core.mail.backends.base import BaseEmailBackend
 
 
@@ -26,21 +24,20 @@ class ResendEmailBackend(BaseEmailBackend):
                 "text": message.body,
             }
 
-            request = Request(
-                "https://api.resend.com/emails",
-                data=json.dumps(payload).encode("utf-8"),
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-                method="POST",
-            )
-
             try:
-                with urlopen(request, timeout=15) as response:
-                    if 200 <= response.status < 300:
-                        sent += 1
-            except (HTTPError, URLError):
+                response = requests.post(
+                    "https://api.resend.com/emails",
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                        "User-Agent": "CareerClubConnect/1.0",
+                    },
+                    json=payload,
+                    timeout=15,
+                )
+                response.raise_for_status()
+                sent += 1
+            except requests.RequestException:
                 if not self.fail_silently:
                     raise
 
