@@ -51,6 +51,12 @@ export default function LoginPage() {
           const details = await loginResponse.json().catch(() => null);
 
           if (details?.code === "approval_pending") {
+            if (details.approval_token) {
+              sessionStorage.setItem(
+                "careerclub_approval_token",
+                details.approval_token
+              );
+            }
             router.push("/awaiting-approval?status=pending");
             return;
           }

@@ -81,6 +81,8 @@ export default function RegisterPage() {
       }
 
       // Registration succeeded.
+      const result = await response.json();
+      sessionStorage.setItem("careerclub_approval_token", result.approval_token);
       setPassword("");
       router.push("/awaiting-approval");
     } catch (err) {

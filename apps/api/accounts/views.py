@@ -10,11 +10,43 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import RegisterSerializer
+from .approval_tokens import create_approval_token, read_approval_token
+from django.core.signing import BadSignature, SignatureExpired
 
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        user = get_user_model().objects.get(pk=response.data["id"])
+        response.data["approval_token"] = create_approval_token(user)
+        return response
+
+
+class ApprovalStatusView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = []
+
+    def post(self, request):
+        token = request.data.get("token")
+        if not isinstance(token, str) or len(token) > 2048:
+            return Response({"detail": "Invalid token."}, status=400)
+
+        try:
+            payload = read_approval_token(token)
+        except (BadSignature, SignatureExpired):
+            return Response({"detail": "Expired or invalid token."}, status=400)
+
+        user = get_user_model().objects.filter(
+            pk=payload["user_id"]
+        ).first()
+
+        if user is None:
+            return Response({"detail": "Invalid token."}, status=400)
+
+        return Response({"approved": user.is_active})
 
 
 class LoginSerializer(serializers.Serializer):
@@ -75,6 +107,7 @@ class LoginView(APIView):
                     return Response(
                         {
                             "code": "approval_pending",
+                            "approval_token": create_approval_token(candidate),
                             "detail": "Your account is awaiting administrator approval.",
                         },
                         status=status.HTTP_403_FORBIDDEN,

@@ -2,7 +2,7 @@ from .password_reset import PasswordResetRequestView, PasswordResetConfirmView
 
 from django.urls import path
 
-from .views import CSRFTokenView, LoginView, LogoutView, MeView, RegisterView, DeleteAccountView
+from .views import CSRFTokenView, LoginView, LogoutView, MeView, RegisterView, ApprovalStatusView, DeleteAccountView
 
 urlpatterns = [
     path(
@@ -16,6 +16,7 @@ urlpatterns = [
         name="password-reset-confirm",
     ),
     path("register/", RegisterView.as_view(), name="register"),
+    path("approval-status/", ApprovalStatusView.as_view(), name="approval-status"),
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("me/", MeView.as_view(), name="me"),
