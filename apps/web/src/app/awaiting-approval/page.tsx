@@ -1,10 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
+
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import "../auth.css";
 
-export default function AwaitingApprovalPage() {
+function ApprovalContent() {
   const searchParams = useSearchParams();
   const isPendingLogin = searchParams.get("status") === "pending";
 
@@ -49,5 +51,14 @@ export default function AwaitingApprovalPage() {
         </Link>
       </section>
     </main>
+  );
+}
+
+
+export default function ApprovalPage() {
+  return (
+    <Suspense fallback={<main style={{ padding: 24 }}>Loading...</main>}>
+      <ApprovalContent />
+    </Suspense>
   );
 }

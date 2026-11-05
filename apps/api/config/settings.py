@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
@@ -14,6 +15,7 @@ INSTALLED_APPS = [
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -82,3 +84,51 @@ EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "1") == "1"
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+
+
+# Production security configuration
+IS_PRODUCTION = os.getenv("DJANGO_ENV", "development") == "production"
+
+if IS_PRODUCTION:
+    if SECRET_KEY == "unsafe-local-development-only" or len(SECRET_KEY) < 32:
+        raise RuntimeError("Set a strong DJANGO_SECRET_KEY in production.")
+
+    DEBUG = False
+
+    if not os.getenv("DJANGO_ALLOWED_HOSTS"):
+        raise RuntimeError("Set DJANGO_ALLOWED_HOSTS in production.")
+
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 3600
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+    CSRF_TRUSTED_ORIGINS = [
+        origin.strip()
+        for origin in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+        if origin.strip()
+    ]
+
+    if EMAIL_BACKEND == "django.core.mail.backends.console.EmailBackend":
+        raise RuntimeError("Configure a real email backend in production.")
+
+
+# Render database configuration
+if os.getenv("DATABASE_URL"):
+    DATABASES["default"] = dj_database_url.config(
+        conn_max_age=600,
+        conn_health_checks=True,
+        ssl_require=os.getenv("DJANGO_ENV") == "production",
+    )
+
+# Static files
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
