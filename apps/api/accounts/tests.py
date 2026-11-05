@@ -12,22 +12,26 @@ class RegistrationTests(APITestCase):
         response = self.client.post(
             reverse("register"),
             {
-                "username": "demo_member",
                 "email": "demo@example.com",
                 "first_name": "Demo",
                 "last_name": "Member",
                 "password": "StrongDemoPassword!2026",
+                "confirm_password": "StrongDemoPassword!2026",
             },
             format="json",
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        user = User.objects.get(username="demo_member")
-        self.assertEqual(user.email, "demo@example.com")
+        user = User.objects.get(email="demo@example.com")
+        self.assertTrue(user.username.startswith("member_"))
+        self.assertFalse(user.is_active)
+        self.assertEqual(user.first_name, "Demo")
+        self.assertEqual(user.last_name, "Member")
         self.assertTrue(user.check_password("StrongDemoPassword!2026"))
         self.assertNotEqual(user.password, "StrongDemoPassword!2026")
         self.assertNotIn("password", response.data)
+        self.assertNotIn("confirm_password", response.data)
 
     def test_duplicate_email_is_rejected(self):
         User.objects.create_user(
@@ -39,9 +43,11 @@ class RegistrationTests(APITestCase):
         response = self.client.post(
             reverse("register"),
             {
-                "username": "another_member",
                 "email": "DEMO@example.com",
+                "first_name": "Another",
+                "last_name": "Member",
                 "password": "AnotherStrongPassword!2026",
+                "confirm_password": "AnotherStrongPassword!2026",
             },
             format="json",
         )
@@ -53,15 +59,52 @@ class RegistrationTests(APITestCase):
         response = self.client.post(
             reverse("register"),
             {
-                "username": "weak_member",
                 "email": "weak@example.com",
+                "first_name": "Weak",
+                "last_name": "Member",
                 "password": "123",
+                "confirm_password": "123",
             },
             format="json",
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(User.objects.count(), 0)
+
+    def test_mismatched_passwords_are_rejected(self):
+        response = self.client.post(
+            reverse("register"),
+            {
+                "email": "mismatch@example.com",
+                "first_name": "Test",
+                "last_name": "Member",
+                "password": "StrongDemoPassword!2026",
+                "confirm_password": "DifferentPassword!2026",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(User.objects.count(), 0)
+
+    def test_generated_usernames_are_unique(self):
+        for email in ("first@example.com", "second@example.com"):
+            response = self.client.post(
+                reverse("register"),
+                {
+                    "email": email,
+                    "first_name": "Test",
+                    "last_name": "Member",
+                    "password": "StrongDemoPassword!2026",
+                    "confirm_password": "StrongDemoPassword!2026",
+                },
+                format="json",
+            )
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        usernames = list(User.objects.values_list("username", flat=True))
+        self.assertEqual(len(usernames), 2)
+        self.assertEqual(len(set(usernames)), 2)
 
 
 class LoginTests(APITestCase):
@@ -86,6 +129,52 @@ class LoginTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["username"], "login_demo")
         self.assertNotIn("password", response.data)
+
+    def test_login_with_email(self):
+        response = self.client.post(
+            reverse("login"),
+            {
+                "username": "login@example.com",
+                "password": "StrongLoginPassword!2026",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["username"], "login_demo")
+
+    def test_pending_member_requires_approval(self):
+        self.user.is_active = False
+        self.user.save(update_fields=["is_active"])
+
+        pending_response = self.client.post(
+            reverse("login"),
+            {
+                "username": "login@example.com",
+                "password": "StrongLoginPassword!2026",
+            },
+            format="json",
+        )
+
+        self.assertEqual(pending_response.status_code, 403)
+        self.assertEqual(
+            pending_response.data["code"],
+            "approval_pending",
+        )
+
+        self.user.is_active = True
+        self.user.save(update_fields=["is_active"])
+
+        approved_response = self.client.post(
+            reverse("login"),
+            {
+                "username": "login@example.com",
+                "password": "StrongLoginPassword!2026",
+            },
+            format="json",
+        )
+
+        self.assertEqual(approved_response.status_code, 200)
 
     def test_login_with_wrong_password(self):
         response = self.client.post(

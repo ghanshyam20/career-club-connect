@@ -6,6 +6,7 @@ from .models import Experience
 
 class ExperienceSerializer(serializers.ModelSerializer):
     author_name = serializers.SerializerMethodField()
+    author_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Experience
@@ -16,6 +17,7 @@ class ExperienceSerializer(serializers.ModelSerializer):
             "content",
             "publish_anonymously",
             "author_name",
+            "author_id",
             "status",
             "created_at",
             "updated_at",
@@ -24,6 +26,7 @@ class ExperienceSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "author_name",
+            "author_id",
             "status",
             "created_at",
             "updated_at",
@@ -33,4 +36,10 @@ class ExperienceSerializer(serializers.ModelSerializer):
         if obj.publish_anonymously:
             return "Anonymous"
 
-        return obj.author.username
+        return obj.author.get_full_name().strip() or obj.author.email or "Career Club member"
+
+
+    def get_author_id(self, obj):
+        if obj.publish_anonymously:
+            return None
+        return obj.author_id

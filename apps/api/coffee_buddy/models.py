@@ -51,3 +51,24 @@ class CoffeeInvitation(models.Model):
 
     def __str__(self):
         return self.topic
+
+
+class CoffeeMessage(models.Model):
+    invitation = models.ForeignKey(
+        CoffeeInvitation,
+        on_delete=models.CASCADE,
+        related_name="messages",
+    )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_coffee_messages",
+    )
+    content = models.TextField(max_length=2000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+    def __str__(self):
+        return f"Message {self.pk} in invitation {self.invitation_id}"

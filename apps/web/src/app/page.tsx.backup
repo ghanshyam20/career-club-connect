@@ -1,0 +1,172 @@
+import Link from "next/link";
+import "./landing.css";
+
+const features = [
+  {
+    icon: "◎",
+    title: "Discover Career Club members",
+    description:
+      "Explore participants from previous rounds, their skills, career interests, and shared experiences.",
+  },
+  {
+    icon: "▤",
+    title: "Learn from career experiences",
+    description:
+      "Read practical stories about job applications, interviews, internships, and networking.",
+  },
+  {
+    icon: "☕",
+    title: "Connect through Coffee Buddy",
+    description:
+      "Meet other members, exchange ideas, and build meaningful professional connections.",
+  },
+  {
+    icon: "✓",
+    title: "Turn advice into action",
+    description:
+      "Organize your career goals, track progress, and take your next step with confidence.",
+  },
+];
+
+export default function Home() {
+  return (
+    <main className="landing">
+      <header className="landing-header">
+        <Link href="/" className="landing-brand">
+          <span className="landing-logo">CC</span>
+          <span>
+            Career Club
+            <strong>Connect</strong>
+          </span>
+        </Link>
+
+        <nav className="landing-nav" aria-label="Main navigation">
+          <Link href="/login" className="landing-login">
+            Log in
+          </Link>
+          <Link href="/register" className="landing-button">
+            Join now
+          </Link>
+        </nav>
+      </header>
+
+      <section className="landing-hero">
+        <div className="landing-hero-inner">
+          <span className="landing-eyebrow">
+            LEARN · CONNECT · GROW
+          </span>
+
+          <h1>
+            Your next career step starts with a{" "}
+            <span>connection.</span>
+          </h1>
+
+          <p>
+            Learn from previous Career Club participants,
+            discover practical career insights, connect with
+            others, and turn advice into action.
+          </p>
+
+          <div className="landing-actions">
+            <Link href="/register" className="landing-button">
+              Get started
+            </Link>
+
+            <Link href="/login" className="landing-outline">
+              Explore the platform
+            </Link>
+          </div>
+
+          <div className="landing-highlights">
+            <span>Career experiences</span>
+            <span>Community connections</span>
+            <span>Personal growth</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-features" id="features">
+        <div className="landing-section-heading">
+          <span className="landing-eyebrow">
+            ONE COMMUNITY, MANY OPPORTUNITIES
+          </span>
+
+          <h2>Everything you need to move forward</h2>
+
+          <p>
+            A shared space for learning, connecting, and
+            building confidence in your career journey.
+          </p>
+        </div>
+
+        <div className="landing-feature-grid">
+          {features.map((feature) => (
+            <article className="landing-feature" key={feature.title}>
+              <div className="landing-feature-icon">
+                {feature.icon}
+              </div>
+
+              <h3>{feature.title}</h3>
+              <p>{feature.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-how">
+        <div className="landing-how-inner">
+          <div>
+            <span className="landing-eyebrow">
+              HOW IT WORKS
+            </span>
+
+            <h2>Small steps. Meaningful progress.</h2>
+
+            <p>
+              Your career journey becomes easier when you
+              can learn from people who have already taken
+              similar steps.
+            </p>
+          </div>
+
+          <div className="landing-steps">
+            <div>
+              <span>01</span>
+              <p>Join the Career Club Connect community.</p>
+            </div>
+
+            <div>
+              <span>02</span>
+              <p>Discover members and explore career stories.</p>
+            </div>
+
+            <div>
+              <span>03</span>
+              <p>Connect, share knowledge, and track your goals.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-cta">
+        <h2>Ready to take your next step?</h2>
+        <p>
+          Join the community and start learning from
+          shared career experiences.
+        </p>
+
+        <Link href="/register" className="landing-button">
+          Create your account
+        </Link>
+      </section>
+
+      <footer className="landing-footer">
+        <strong>Career Club Connect</strong>
+        <span>
+          Independent student-built prototype. Not officially
+          affiliated with the City of Espoo.
+        </span>
+      </footer>
+    </main>
+  );
+}

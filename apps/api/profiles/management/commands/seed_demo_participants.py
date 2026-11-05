@@ -116,12 +116,37 @@ class Command(BaseCommand):
                 },
             )
 
+            category_by_title = {
+                "How I built my first data analytics portfolio": Experience.Category.OTHER,
+                "Preparing for a junior Python developer interview": Experience.Category.INTERVIEW,
+                "How user research improved my portfolio": Experience.Category.OTHER,
+                "My first cloud infrastructure project": Experience.Category.OTHER,
+                "Finding my first digital marketing internship": Experience.Category.INTERNSHIP,
+                "Building a full stack project for my CV": Experience.Category.JOB_APPLICATION,
+                "What I learned about Finnish recruitment": Experience.Category.JOB_APPLICATION,
+                "Preparing for an entry level cybersecurity role": Experience.Category.INTERVIEW,
+                "How I prepared for a business analyst interview": Experience.Category.INTERVIEW,
+                "Networking helped me find an engineering opportunity": Experience.Category.NETWORKING,
+                "My first experience working in an Agile team": Experience.Category.INTERNSHIP,
+                "Preparing for an IT support technical interview": Experience.Category.INTERVIEW,
+            }
+
+            detailed_story = (
+                f"MY EXPERIENCE\n\n{story}\n\n"
+                f"WHAT I LEARNED\n\n{advice}\n\n"
+                "MY ADVICE TO OTHER MEMBERS\n\n"
+                "Start with one practical goal, document what you learn, "
+                "and practise explaining your work using specific examples. "
+                "Ask for feedback from other Career Club members and "
+                "improve your approach based on what you discover."
+            )
+
             Experience.objects.update_or_create(
                 author=user,
                 title=title,
                 defaults={
-                    "category": Experience.Category.INTERVIEW,
-                    "content": story,
+                    "category": category_by_title[title],
+                    "content": detailed_story,
                     "status": Experience.Status.APPROVED,
                     "publish_anonymously": False,
                 },

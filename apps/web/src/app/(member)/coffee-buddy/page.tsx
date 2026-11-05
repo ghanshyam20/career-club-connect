@@ -220,27 +220,84 @@ export default function CoffeeBuddyPage() {
           <div className="coffee-cards">
             {invitations.map((invitation) => (
               <article className="coffee-card" key={invitation.id}>
+                <div className="coffee-card-top">
+                  <div className="coffee-person">
+                    <span className="coffee-avatar" aria-hidden="true">
+                      {invitation.creator_name.charAt(0).toUpperCase()}
+                    </span>
+                    <div>
+                      <strong>{invitation.creator_name}</strong>
+                      <small>
+                        {invitation.is_creator ? "Your invitation" : "Career Club member"}
+                      </small>
+                    </div>
+                  </div>
+
+                  <span className={`coffee-status coffee-status-${invitation.status}`}>
+                    {invitation.status === "open"
+                      ? "Open"
+                      : invitation.status === "accepted"
+                        ? "Connected"
+                        : "Cancelled"}
+                  </span>
+                </div>
+
                 <h3>{invitation.topic}</h3>
-                <p>{invitation.description}</p>
-                <p>Created by: {invitation.creator_name}</p>
-                <p>Format: {invitation.meeting_format === "online" ? "Online" : "In person"}</p>
-                <p>Status: {invitation.status}</p>
-                {invitation.accepted_by_name && (
-                  <p>Accepted by: {invitation.accepted_by_name}</p>
+                {invitation.description && (
+                  <p className="coffee-description">{invitation.description}</p>
                 )}
+
+                <div className="coffee-meta">
+                  <span className="coffee-format">
+                    {invitation.meeting_format === "online"
+                      ? "💻 Online meeting"
+                      : "☕ In-person meeting"}
+                  </span>
+                  <span>
+                    {new Date(invitation.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+
+                {invitation.accepted_by_name && (
+                  <div className="coffee-connection">
+                    <span aria-hidden="true">✓</span>
+                    Connected with <strong>{invitation.accepted_by_name}</strong>
+                  </div>
+                )}
+
+                {invitation.status === "accepted" && (
+                  <div className="coffee-actions">
+                    <button
+                      className="coffee-button"
+                      type="button"
+                      onClick={() => router.push(`/coffee-buddy/${invitation.id}`)}
+                    >
+                      Open conversation
+                    </button>
+                  </div>
+                )}
+
                 {invitation.status === "open" && (
                   <div className="coffee-actions">
                     {!invitation.is_creator && (
-<button className="coffee-button" type="button" disabled={busyId === invitation.id}
-                      onClick={() => updateInvitation(invitation.id, "accept")}>
-                      Accept
-                    </button>
+                      <button
+                        className="coffee-button"
+                        type="button"
+                        disabled={busyId === invitation.id}
+                        onClick={() => updateInvitation(invitation.id, "accept")}
+                      >
+                        {busyId === invitation.id ? "Connecting..." : "Accept invitation"}
+                      </button>
                     )}
                     {invitation.is_creator && (
-<button className="coffee-cancel" type="button" disabled={busyId === invitation.id}
-                      onClick={() => updateInvitation(invitation.id, "cancel")}>
-                      Cancel
-                    </button>
+                      <button
+                        className="coffee-cancel"
+                        type="button"
+                        disabled={busyId === invitation.id}
+                        onClick={() => updateInvitation(invitation.id, "cancel")}
+                      >
+                        Cancel invitation
+                      </button>
                     )}
                   </div>
                 )}

@@ -13,6 +13,26 @@ type Notification = {
   created_at: string;
 };
 
+
+function notificationType(message: string) {
+  const value = message.toLowerCase();
+  if (value.includes("coffee buddy message")) return "message";
+  if (value.includes("coffee invitation")) return "coffee";
+  return "general";
+}
+
+function relativeTime(value: string) {
+  const date = new Date(value);
+  const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+
+  if (seconds < 60) return "Just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+  return date.toLocaleDateString();
+}
+
 export default function NotificationsPage() {
   const router = useRouter();
   const [items, setItems] = useState<Notification[]>([]);
@@ -85,6 +105,13 @@ export default function NotificationsPage() {
 
   const unreadCount = items.filter((item) => !item.is_read).length;
 
+  async function markAllRead() {
+    const unread = items.filter((item) => !item.is_read);
+    for (const item of unread) {
+      await markRead(item.id);
+    }
+  }
+
   return (
     <main className="notifications-page">
       <header className="notifications-heading">
@@ -95,6 +122,16 @@ export default function NotificationsPage() {
       <div className="notifications-summary">
         <strong>{unreadCount} unread</strong>
         <span>{items.length} notifications</span>
+        {unreadCount > 0 && (
+          <button
+            className="notifications-mark-all"
+            type="button"
+            disabled={busyId !== null}
+            onClick={() => void markAllRead()}
+          >
+            Mark all as read
+          </button>
+        )}
       </div>
 
       {error && <p className="notifications-error" role="alert">{error}</p>}
@@ -113,12 +150,37 @@ export default function NotificationsPage() {
               className={`notification-card ${item.is_read ? "" : "unread"}`}
               key={item.id}
             >
-              <div>
+              <div className="notification-content">
+                <div className="notification-topline">
+                  <span className="notification-icon" aria-hidden="true">
+                    {notificationType(item.message) === "message"
+                      ? "💬"
+                      : notificationType(item.message) === "coffee"
+                        ? "☕"
+                        : "🔔"}
+                  </span>
+                  <span className="notification-category">
+                    {notificationType(item.message) === "message"
+                      ? "New message"
+                      : notificationType(item.message) === "coffee"
+                        ? "Coffee Buddy"
+                        : "Activity"}
+                  </span>
+                  {!item.is_read && (
+                    <span className="notification-unread-dot" aria-label="Unread" />
+                  )}
+                </div>
                 <p>{item.message}</p>
-                <small>{new Date(item.created_at).toLocaleString()}</small>
+                <small title={new Date(item.created_at).toLocaleString()}>
+                  {relativeTime(item.created_at)}
+                </small>
                 {item.link.startsWith("/") && !item.link.startsWith("//") && (
-                  <div>
-                    <Link href={item.link}>View activity →</Link>
+                  <div className="notification-link">
+                    <Link href={item.link}>
+                      {notificationType(item.message) === "message"
+                        ? "Open conversation"
+                        : "View activity"} →
+                    </Link>
                   </div>
                 )}
               </div>

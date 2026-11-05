@@ -55,7 +55,10 @@ def accept_invitation(request, pk):
 
         Notification.objects.create(
             recipient=invitation.creator,
-            message=f"{request.user.username} accepted your coffee invitation: {invitation.topic}",
+            message=(
+                f"{request.user.get_full_name().strip() or request.user.get_username()} "
+                f"accepted your coffee invitation: {invitation.topic}"
+            ),
             link="/coffee-buddy",
         )
 
@@ -83,3 +86,98 @@ def cancel_invitation(request, pk):
         invitation.save()
 
     return Response(CoffeeInvitationSerializer(invitation).data)
+
+
+from rest_framework.views import APIView
+from .models import CoffeeMessage
+from .serializers import CoffeeMessageSerializer
+
+
+class CoffeeConversationView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_invitation(self, request, pk):
+        return CoffeeInvitation.objects.select_related(
+            "creator", "accepted_by"
+        ).filter(
+            pk=pk,
+            status=CoffeeInvitation.Status.ACCEPTED,
+        ).filter(
+            Q(creator=request.user) | Q(accepted_by=request.user)
+        ).first()
+
+    def get(self, request, pk):
+        invitation = self.get_invitation(request, pk)
+
+        if invitation is None:
+            return Response(
+                {"detail": "Conversation not available."},
+                status=404,
+            )
+
+        messages = CoffeeMessage.objects.filter(
+            invitation=invitation
+        ).select_related("sender").order_by("created_at", "id")[:100]
+
+        return Response(
+            CoffeeMessageSerializer(messages, many=True).data
+        )
+
+    def post(self, request, pk):
+        content = request.data.get("content")
+
+        if not isinstance(content, str):
+            return Response(
+                {"content": ["A message is required."]},
+                status=400,
+            )
+
+        content = content.strip()
+
+        if not content or len(content) > 2000:
+            return Response(
+                {"content": ["Message must contain 1–2000 characters."]},
+                status=400,
+            )
+
+        with transaction.atomic():
+            invitation = CoffeeInvitation.objects.select_for_update().filter(
+                pk=pk,
+                status=CoffeeInvitation.Status.ACCEPTED,
+            ).filter(
+                Q(creator=request.user) | Q(accepted_by=request.user)
+            ).first()
+
+            if invitation is None:
+                return Response(
+                    {"detail": "Conversation not available."},
+                    status=404,
+                )
+
+            message = CoffeeMessage.objects.create(
+                invitation=invitation,
+                sender=request.user,
+                content=content,
+            )
+
+            recipient = (
+                invitation.accepted_by
+                if invitation.creator_id == request.user.pk
+                else invitation.creator
+            )
+
+            display_name = (
+                request.user.get_full_name().strip()
+                or request.user.get_username()
+            )
+
+            Notification.objects.create(
+                recipient=recipient,
+                message=f"New Coffee Buddy message from {display_name}",
+                link=f"/coffee-buddy/{invitation.pk}",
+            )
+
+        return Response(
+            CoffeeMessageSerializer(message).data,
+            status=201,
+        )

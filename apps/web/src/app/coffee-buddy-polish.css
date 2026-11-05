@@ -146,3 +146,159 @@
   .coffee-page { padding: 24px 16px; }
   .coffee-panel { padding: 20px; }
 }
+
+/* Coffee Buddy invitation card refinements */
+
+.coffee-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.coffee-card {
+  background: #fff;
+  border: 1px solid #dce5f0;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 3px 12px rgba(16, 43, 80, .035);
+}
+
+.coffee-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.coffee-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.coffee-person strong {
+  display: block;
+  color: #102b50;
+  overflow-wrap: anywhere;
+}
+
+.coffee-person small {
+  display: block;
+  color: #718096;
+  margin-top: 3px;
+}
+
+.coffee-avatar {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #e8f0ff;
+  color: #1967df;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.coffee-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.coffee-status-open {
+  color: #17603a;
+  background: #e8f7ee;
+}
+
+.coffee-status-accepted {
+  color: #1554a0;
+  background: #e8f0ff;
+}
+
+.coffee-status-cancelled {
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.coffee-card h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  line-height: 1.4;
+  color: #102b50;
+}
+
+.coffee-description {
+  color: #52647d;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.coffee-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin: 18px 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.coffee-format {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5fb;
+  border-radius: 8px;
+  padding: 7px 10px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.coffee-connection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  background: #effaf3;
+  color: #17603a;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.coffee-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.coffee-actions button {
+  min-height: 42px;
+  border-radius: 9px;
+}
+
+@media (max-width: 600px) {
+  .coffee-card {
+    padding: 17px;
+  }
+
+  .coffee-actions {
+    flex-direction: column;
+  }
+
+  .coffee-actions button {
+    width: 100%;
+  }
+
+  .coffee-card-top {
+    align-items: flex-start;
+  }
+}

@@ -153,3 +153,74 @@
     cursor: not-allowed;
   }
 }
+
+/* Mobile navigation improvements */
+
+.app-mobile-header {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .app-mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 58px;
+    padding: 10px 16px;
+    background: #fff;
+    border-bottom: 1px solid #dce4ed;
+  }
+
+  .app-mobile-brand {
+    color: #102b4e;
+    font-size: 15px;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .app-mobile-brand strong {
+    color: #1769e0;
+  }
+
+  .app-mobile-profile {
+    padding: 8px 12px;
+    background: #eef4ff;
+    border-radius: 9px;
+    color: #1769e0;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .app-mobile-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 0;
+    background: transparent;
+    color: #102b4e;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .app-mobile-back span {
+    font-size: 27px;
+    line-height: 1;
+  }
+
+  .app-bottom-nav {
+    justify-content: flex-start;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-bottom-link {
+    flex: 0 0 72px;
+    min-height: 49px;
+  }
+}

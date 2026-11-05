@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import "./community.css";
 
 type CommunityPost = {
   id: number;
@@ -34,6 +35,7 @@ export default function CommunityPage() {
   const router = useRouter();
 
   const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [content, setContent] = useState("");
@@ -294,243 +296,314 @@ export default function CommunityPage() {
     }
   }
 
+  const visiblePosts = posts.filter(
+    (post) => activeCategory === "all" || post.category === activeCategory
+  );
+
+  const initials = (name: string) =>
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join("") || "CC";
+
+  const formatDate = (value: string) =>
+    new Date(value).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
   return (
-    <main style={{ maxWidth: 760, margin: "0 auto", padding: "24px 16px" }}>
-      <h1>Community</h1>
-      <p>Connect and share with Career Club members.</p>
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          background: "#ffffff",
-          border: "1px solid #e2e8f0",
-          borderRadius: 16,
-          padding: 20,
-          marginTop: 24,
-          marginBottom: 24,
-        }}
-      >
-        <h2 style={{ fontSize: 18, marginBottom: 16 }}>
-          Share with the community
-        </h2>
-
-        <textarea
-          value={content}
-          onChange={(event) => setContent(event.target.value)}
-          placeholder="What's on your mind? Share a question, opportunity, or experience..."
-          maxLength={3000}
-          required
-          rows={4}
-          style={{
-            width: "100%",
-            padding: 12,
-            border: "1px solid #cbd5e1",
-            borderRadius: 10,
-            resize: "vertical",
-            font: "inherit",
-            boxSizing: "border-box",
-          }}
-        />
-
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            marginTop: 16,
-            alignItems: "center",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
-        >
-          <select
-            value={category}
-            onChange={(event) => setCategory(event.target.value)}
-            aria-label="Post category"
-            style={{
-              padding: 10,
-              borderRadius: 8,
-              border: "1px solid #cbd5e1",
-            }}
-          >
-            {Object.entries(categories).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-
-          <button
-            type="submit"
-            disabled={saving || !content.trim()}
-            style={{
-              background: "#1769e0",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: 10,
-              padding: "11px 22px",
-              fontWeight: 600,
-              cursor: saving ? "wait" : "pointer",
-              opacity: saving || !content.trim() ? 0.6 : 1,
-            }}
-          >
-            {saving ? "Publishing..." : "Publish Post"}
-          </button>
+    <main className="community-page">
+      <header className="community-hero">
+        <div>
+          <span className="community-eyebrow">CAREER CLUB CONNECT</span>
+          <h1>Community</h1>
+          <p>
+            Share ideas, ask questions, and grow together with your
+            Career Club community.
+          </p>
         </div>
-      </form>
+        <div className="community-hero-decoration" aria-hidden="true">
+          <span>✦</span>
+        </div>
+      </header>
 
-      {success && <p role="status">{success}</p>}
-
-      {loading && <p>Loading community posts...</p>}
-
-      {error && <p role="alert">{error}</p>}
-
-      {!loading && !error && posts.length === 0 && (
-        <p>No posts yet. Be the first to start a conversation!</p>
-      )}
-
-      {!loading &&
-        !error &&
-        posts.map((post) => (
-          <article
-            key={post.id}
-            style={{
-              background: "#ffffff",
-              border: "1px solid #e2e8f0",
-              borderRadius: 16,
-              padding: 20,
-              marginTop: 18,
-            }}
-          >
-            <div style={{ fontWeight: 700 }}>{post.author_name}</div>
-
-            <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
-              {categories[post.category] ?? post.category}
-              {" · "}
-              {new Date(post.created_at).toLocaleDateString()}
+      <div className="community-layout">
+        <div className="community-main">
+          <form className="community-composer" onSubmit={handleSubmit}>
+            <div className="community-composer-heading">
+              <div className="community-composer-icon">✎</div>
+              <div>
+                <h2>Start a conversation</h2>
+                <p>Have something valuable to share?</p>
+              </div>
             </div>
 
-            <p style={{ marginTop: 16, whiteSpace: "pre-wrap" }}>
-              {post.content}
-            </p>
+            <label className="community-sr-only" htmlFor="community-content">
+              Write your community post
+            </label>
+            <textarea
+              id="community-content"
+              value={content}
+              onChange={(event) => setContent(event.target.value)}
+              placeholder="Share a question, an opportunity, an experience, or something you've learned..."
+              maxLength={3000}
+              required
+              rows={4}
+              className="community-composer-textarea"
+            />
 
-            <button
-              type="button"
-              onClick={() => handleLike(post)}
-              aria-label={post.is_liked ? "Unlike post" : "Like post"}
-              aria-pressed={post.is_liked}
-              style={{
-                marginTop: 16,
-                background: "transparent",
-                border: "none",
-                padding: "8px 0",
-                color: post.is_liked ? "#1769e0" : "#475569",
-                fontWeight: post.is_liked ? 700 : 400,
-                cursor: "pointer",
-                fontSize: 15,
-              }}
-            >
-              {post.is_liked ? "♥" : "♡"} {post.likes_count} likes
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleToggleComments(post.id)}
-              aria-expanded={openComments === post.id}
-              style={{
-                marginLeft: 24,
-                background: "transparent",
-                border: "none",
-                color: "#475569",
-                cursor: "pointer",
-                fontSize: 15,
-              }}
-            >
-              {openComments === post.id ? "Hide comments" : "💬 Comments"}
-            </button>
-
-            {openComments === post.id && (
-              <section
-                aria-label="Post comments"
-                style={{
-                  borderTop: "1px solid #e2e8f0",
-                  marginTop: 16,
-                  paddingTop: 16,
-                }}
-              >
-                {commentsLoading && <p>Loading comments...</p>}
-
-                {!commentsLoading && (comments[post.id] ?? []).length === 0 && (
-                  <p>No comments yet. Start the conversation!</p>
-                )}
-
-                {!commentsLoading &&
-                  (comments[post.id] ?? []).map((comment) => (
-                    <div
-                      key={comment.id}
-                      style={{
-                        background: "#f8fafc",
-                        padding: 12,
-                        borderRadius: 10,
-                        marginBottom: 10,
-                      }}
-                    >
-                      <strong>{comment.author_name}</strong>
-                      <p style={{ marginTop: 6, whiteSpace: "pre-wrap" }}>
-                        {comment.content}
-                      </p>
-                    </div>
-                  ))}
-                <form
-                  onSubmit={(event) => handleSubmitComment(event, post.id)}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 10,
-                    marginTop: 16,
-                  }}
+            <div className="community-composer-footer">
+              <div className="community-composer-options">
+                <label htmlFor="community-category">Topic</label>
+                <select
+                  id="community-category"
+                  value={category}
+                  onChange={(event) => setCategory(event.target.value)}
                 >
-                  <label htmlFor={`comment-${post.id}`}>Write a comment</label>
+                  {Object.entries(categories).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                <span className="community-character-count">
+                  {content.length}/3000
+                </span>
+              </div>
 
-                  <textarea
-                    id={`comment-${post.id}`}
-                    value={commentText}
-                    onChange={(event) => setCommentText(event.target.value)}
-                    placeholder="Share your thoughts..."
-                    maxLength={1000}
-                    rows={3}
-                    required
-                    style={{
-                      width: "100%",
-                      boxSizing: "border-box",
-                      padding: 12,
-                      border: "1px solid #cbd5e1",
-                      borderRadius: 10,
-                      fontSize: 15,
-                      resize: "vertical",
-                    }}
-                  />
+              <button
+                className="community-primary-button"
+                type="submit"
+                disabled={saving || !content.trim()}
+              >
+                {saving ? "Publishing..." : "Publish post"}
+              </button>
+            </div>
+          </form>
 
-                  <button
-                    type="submit"
-                    disabled={commentSaving || !commentText.trim()}
-                    style={{
-                      alignSelf: "flex-start",
-                      background: "#1769e0",
-                      color: "#ffffff",
-                      border: "none",
-                      borderRadius: 10,
-                      padding: "10px 18px",
-                      fontWeight: 600,
-                      cursor: commentSaving ? "wait" : "pointer",
-                      opacity: commentSaving ? 0.6 : 1,
-                    }}
-                  >
-                    {commentSaving ? "Posting..." : "Post Comment"}
-                  </button>
-                </form>
-              </section>
+          {success && (
+            <p className="community-feedback community-success" role="status">
+              {success}
+            </p>
+          )}
+          {error && (
+            <p className="community-feedback community-error" role="alert">
+              {error}
+            </p>
+          )}
+
+          <section className="community-feed" aria-label="Community discussions">
+            <div className="community-feed-heading">
+              <div>
+                <span className="community-eyebrow">DISCUSSIONS</span>
+                <h2>Community feed</h2>
+              </div>
+              <span className="community-post-count">
+                {visiblePosts.length} posts
+              </span>
+            </div>
+
+            <div className="community-filters" aria-label="Filter posts">
+              {[
+                ["all", "All posts"],
+                ...Object.entries(categories),
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={
+                    activeCategory === value
+                      ? "community-filter active"
+                      : "community-filter"
+                  }
+                  aria-pressed={activeCategory === value}
+                  onClick={() => setActiveCategory(value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {loading && (
+              <div className="community-empty">Loading discussions...</div>
             )}
-          </article>
-        ))}
+
+            {!loading && visiblePosts.length === 0 && (
+              <div className="community-empty">
+                <div className="community-empty-icon">✦</div>
+                <h3>No discussions here yet</h3>
+                <p>Start a conversation or explore another topic.</p>
+              </div>
+            )}
+
+            {!loading &&
+              visiblePosts.map((post) => (
+                <article className="community-post" key={post.id}>
+                  <div className="community-post-header">
+                    <div className="community-avatar">
+                      {initials(post.author_name)}
+                    </div>
+                    <div className="community-author-info">
+                      <strong>{post.author_name}</strong>
+                      <span>{formatDate(post.created_at)}</span>
+                    </div>
+                    <span
+                      className={`community-category community-category-${post.category}`}
+                    >
+                      {categories[post.category] ?? post.category}
+                    </span>
+                  </div>
+
+                  <p className="community-post-content">{post.content}</p>
+
+                  <div className="community-post-actions">
+                    <button
+                      type="button"
+                      className={
+                        post.is_liked
+                          ? "community-action liked"
+                          : "community-action"
+                      }
+                      onClick={() => void handleLike(post)}
+                      aria-label={post.is_liked ? "Unlike post" : "Like post"}
+                      aria-pressed={post.is_liked}
+                    >
+                      <span aria-hidden="true">
+                        {post.is_liked ? "♥" : "♡"}
+                      </span>
+                      {post.likes_count} {post.likes_count === 1 ? "Like" : "Likes"}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="community-action"
+                      onClick={() => void handleToggleComments(post.id)}
+                      aria-expanded={openComments === post.id}
+                    >
+                      <span aria-hidden="true">▤</span>
+                      {openComments === post.id ? "Hide comments" : "Comments"}
+                    </button>
+                  </div>
+
+                  {openComments === post.id && (
+                    <section
+                      className="community-comments"
+                      aria-label="Post comments"
+                    >
+                      <h3>Conversation</h3>
+
+                      {commentsLoading && <p>Loading comments...</p>}
+
+                      {!commentsLoading &&
+                        (comments[post.id] ?? []).length === 0 && (
+                          <p className="community-muted">
+                            No comments yet. Be the first to reply.
+                          </p>
+                        )}
+
+                      {!commentsLoading &&
+                        (comments[post.id] ?? []).map((comment) => (
+                          <div className="community-comment" key={comment.id}>
+                            <div className="community-comment-avatar">
+                              {initials(comment.author_name)}
+                            </div>
+                            <div className="community-comment-body">
+                              <div className="community-comment-meta">
+                                <strong>{comment.author_name}</strong>
+                                <span>{formatDate(comment.created_at)}</span>
+                              </div>
+                              <p>{comment.content}</p>
+                            </div>
+                          </div>
+                        ))}
+
+                      <form
+                        className="community-comment-form"
+                        onSubmit={(event) =>
+                          void handleSubmitComment(event, post.id)
+                        }
+                      >
+                        <label htmlFor={`comment-${post.id}`}>
+                          Add your comment
+                        </label>
+                        <textarea
+                          id={`comment-${post.id}`}
+                          value={commentText}
+                          onChange={(event) =>
+                            setCommentText(event.target.value)
+                          }
+                          placeholder="Write a thoughtful reply..."
+                          maxLength={1000}
+                          rows={3}
+                          required
+                        />
+                        <button
+                          type="submit"
+                          className="community-primary-button"
+                          disabled={commentSaving || !commentText.trim()}
+                        >
+                          {commentSaving ? "Posting..." : "Post comment"}
+                        </button>
+                      </form>
+                    </section>
+                  )}
+                </article>
+              ))}
+          </section>
+        </div>
+
+        <aside className="community-sidebar" aria-label="Community information">
+          <section className="community-side-card community-welcome">
+            <div className="community-side-symbol">✦</div>
+            <h2>Better together.</h2>
+            <p>
+              A space to exchange knowledge, support fellow members,
+              and make meaningful career connections.
+            </p>
+          </section>
+
+          <section className="community-side-card">
+            <h2>Explore topics</h2>
+            <p>Find conversations that matter to you.</p>
+
+            <div className="community-topic-list">
+              {Object.entries(categories).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setActiveCategory(value)}
+                  className={
+                    activeCategory === value
+                      ? "community-topic selected"
+                      : "community-topic"
+                  }
+                >
+                  <span className="community-topic-dot" />
+                  {label}
+                  <span className="community-topic-count">
+                    {posts.filter((post) => post.category === value).length}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="community-side-card community-guidelines">
+            <h2>Community guidelines</h2>
+            <p>
+              Be respectful, share useful insights, and keep
+              discussions constructive.
+            </p>
+            <div className="community-guideline-note">
+              Every conversation is an opportunity to learn.
+            </div>
+          </section>
+        </aside>
+      </div>
     </main>
   );
 }

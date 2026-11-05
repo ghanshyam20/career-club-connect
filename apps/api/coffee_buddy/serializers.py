@@ -37,11 +37,11 @@ class CoffeeInvitationSerializer(serializers.ModelSerializer):
         return bool(request and request.user.is_authenticated and request.user.pk == obj.creator_id)
 
     def get_creator_name(self, obj):
-        return obj.creator.get_username()
+        return obj.creator.get_full_name().strip() or obj.creator.get_username()
 
     def get_accepted_by_name(self, obj):
         if obj.accepted_by:
-            return obj.accepted_by.get_username()
+            return obj.accepted_by.get_full_name().strip() or obj.accepted_by.get_username()
         return None
 
     def validate_topic(self, value):
@@ -49,3 +49,25 @@ class CoffeeInvitationSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError("Topic cannot be empty.")
         return value
+
+
+from .models import CoffeeMessage
+
+
+class CoffeeMessageSerializer(serializers.ModelSerializer):
+    sender_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CoffeeMessage
+        fields = [
+            "id",
+            "invitation",
+            "sender",
+            "sender_name",
+            "content",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+    def get_sender_name(self, obj):
+        return obj.sender.get_full_name().strip() or obj.sender.get_username()

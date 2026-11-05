@@ -107,7 +107,7 @@ export default function MemberDetailPage() {
 
         <div>
           <h1>{member.name}</h1>
-          <p className="member-username">@{member.username}</p>
+
 
           {member.career_club_round !== null && (
             <span className="member-round">
@@ -152,7 +152,14 @@ export default function MemberDetailPage() {
                 <span className="member-content-category">
                   {experience.category.replaceAll("_", " ")}
                 </span>
-                <h3>{experience.title}</h3>
+                <h3>
+                  <Link
+                    href={`/experiences/${experience.id}`}
+                    className="member-experience-link"
+                  >
+                    {experience.title}
+                  </Link>
+                </h3>
                 <p>{experience.content}</p>
               </article>
             ))}

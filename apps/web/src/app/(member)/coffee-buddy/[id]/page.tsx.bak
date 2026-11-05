@@ -1,0 +1,146 @@
+"use client";
+
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+
+type Message = {
+  id: number;
+  sender: number;
+  sender_name: string;
+  content: string;
+  created_at: string;
+};
+
+export default function CoffeeChatPage() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [myId, setMyId] = useState<number | null>(null);
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+
+  const loadMessages = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/v1/coffee-buddy/${id}/messages/`, {
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+      if (response.status === 401 || response.status === 403) {
+        router.replace("/login");
+        return;
+      }
+      if (!response.ok) throw new Error("Conversation unavailable.");
+      setMessages(await response.json());
+      setError("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Connection failed.");
+    } finally {
+      setLoading(false);
+    }
+  }, [id, router]);
+
+  useEffect(() => {
+    const loadInitialMessages = async () => {
+      await loadMessages();
+    };
+
+    void loadInitialMessages();
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") void loadMessages();
+    }, 5000);
+    return () => window.clearInterval(interval);
+  }, [loadMessages]);
+
+  useEffect(() => {
+    fetch("/api/v1/auth/me/", { credentials: "same-origin" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((user) => { if (user) setMyId(user.id); })
+      .catch(() => {});
+  }, []);
+
+  async function sendMessage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!content.trim() || sending) return;
+
+    setSending(true);
+    setError("");
+    try {
+      const csrfResponse = await fetch("/api/v1/auth/csrf/", {
+        credentials: "same-origin",
+      });
+      if (!csrfResponse.ok) throw new Error("Could not prepare message.");
+      const { csrfToken } = await csrfResponse.json();
+
+      const response = await fetch(`/api/v1/coffee-buddy/${id}/messages/`, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        body: JSON.stringify({ content: content.trim() }),
+      });
+
+      if (!response.ok) throw new Error("Could not send message.");
+      setContent("");
+      await loadMessages();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Message failed.");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <main className="app-container" style={{ maxWidth: 850 }}>
+      <Link href="/coffee-buddy">← Back to Coffee Buddy</Link>
+      <h1>Coffee Buddy conversation</h1>
+      <p>Arrange your online meeting or agree on a public meeting place.</p>
+
+      <section className="app-card" style={{ marginTop: 20 }}>
+        <div style={{ minHeight: 250, maxHeight: 450, overflowY: "auto" }}>
+          {loading ? <p>Loading messages...</p> : messages.length === 0 ? (
+            <p>No messages yet. Say hello!</p>
+          ) : messages.map((message) => (
+            <article key={message.id} style={{
+              margin: "12px 0",
+              padding: 12,
+              borderRadius: 12,
+              background: message.sender === myId ? "#dbeafe" : "#f1f5f9",
+              color: "#0f172a",
+              overflowWrap: "anywhere",
+            }}>
+              <strong>{message.sender_name}</strong>
+              <p style={{ whiteSpace: "pre-wrap" }}>{message.content}</p>
+              <small>{new Date(message.created_at).toLocaleString()}</small>
+            </article>
+          ))}
+        </div>
+
+        {error && <p role="alert">{error}</p>}
+
+        <form onSubmit={sendMessage} style={{
+          display: "flex", flexDirection: "column", gap: 12, marginTop: 20,
+        }}>
+          <label htmlFor="coffee-message">Your message</label>
+          <textarea
+            id="coffee-message"
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            maxLength={2000}
+            rows={3}
+            placeholder="Write your message..."
+            required
+          />
+          <button className="btn-primary" type="submit"
+            disabled={sending || !content.trim()}>
+            {sending ? "Sending..." : "Send message"}
+          </button>
+        </form>
+      </section>
+    </main>
+  );
+}

@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import "./actions.css";
 
 type CareerAction = {
   id: number;
@@ -339,15 +340,51 @@ export default function MyActionsPage() {
     }
   }
 
+  const completedCount = actions.filter(
+    (action) => action.status === "completed"
+  ).length;
+
+  const progressCount = actions.filter(
+    (action) => action.status === "in_progress"
+  ).length;
+
+  const todoCount = actions.filter(
+    (action) => action.status === "todo"
+  ).length;
+
   return (
-    <main style={{ maxWidth: 900, margin: "0 auto", padding: "24px 16px" }}>
-      <h1>My Career Actions</h1>
-      <p style={{ color: "#64748b", marginTop: 8 }}>
-        Plan your career goals, organize your next steps, and track your
-        progress.
-      </p>
+    <main className="career-actions-page">
+      <header className="career-actions-header">
+        <h1>My Career Actions</h1>
+        <p>
+          Turn your career goals into achievable steps and track your progress.
+        </p>
+      </header>
+
+      <div className="career-stats" aria-label="Career action statistics">
+        <div className="career-stat">
+          <span>Total actions</span>
+          <strong>{actions.length}</strong>
+        </div>
+
+        <div className="career-stat">
+          <span>To Do</span>
+          <strong>{todoCount}</strong>
+        </div>
+
+        <div className="career-stat progress">
+          <span>In Progress</span>
+          <strong>{progressCount}</strong>
+        </div>
+
+        <div className="career-stat completed">
+          <span>Completed</span>
+          <strong>{completedCount}</strong>
+        </div>
+      </div>
 
       <section
+        className="career-actions-panel"
         style={{
           background: "#ffffff",
           border: "1px solid #e2e8f0",
@@ -358,6 +395,7 @@ export default function MyActionsPage() {
       >
         <form
           onSubmit={handleSubmit}
+          className="career-action-form"
           style={{
             display: "grid",
             gap: 14,
@@ -459,12 +497,22 @@ export default function MyActionsPage() {
           actions.map((action) => (
             <article
               key={action.id}
+              className="career-action-card"
               style={{
                 borderTop: "1px solid #e2e8f0",
                 padding: "16px 0",
               }}
             >
-              <h3>{action.title}</h3>
+              <div className="career-action-top">
+                <h3>{action.title}</h3>
+                <span className={`career-status ${action.status}`}>
+                  {action.status === "todo"
+                    ? "To Do"
+                    : action.status === "in_progress"
+                      ? "In Progress"
+                      : "Completed"}
+                </span>
+              </div>
               {action.description && <p>{action.description}</p>}
               <label>
                 Status:{" "}

@@ -1,6 +1,8 @@
 
 "use client";
 
+import "../auth.css";
+
 import { useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
@@ -11,9 +13,11 @@ export default function RegisterPage() {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [username, setUsername] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,7 +52,7 @@ export default function RegisterPage() {
         body: JSON.stringify({
           first_name: firstName.trim(),
           last_name: lastName.trim(),
-          username: username.trim(),
+          confirm_password: confirmPassword,
           email: email.trim(),
           password,
         }),
@@ -78,7 +82,7 @@ export default function RegisterPage() {
 
       // Registration succeeded.
       setPassword("");
-      router.push("/login");
+      router.push("/awaiting-approval");
     } catch (err) {
       setError(
         err instanceof Error
@@ -91,132 +95,124 @@ export default function RegisterPage() {
   }
 
   return (
-    <main
-      style={{
-        maxWidth: 460,
-        margin: "60px auto",
-        padding: 24,
-      }}
-    >
-      <h1>Join Career Club Connect</h1>
-      <p>Create your account to get started.</p>
+    <main className="auth-page">
+      <section className="auth-card">
+        <Link href="/" className="auth-brand">
+          <span className="auth-brand-mark">CC</span>
+          <span>Career Club Connect</span>
+        </Link>
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginTop: 20 }}>
-          <label htmlFor="firstName">First name</label>
-          <input
-            id="firstName"
-            type="text"
-            required
-            autoComplete="given-name"
-            value={firstName}
-            onChange={(event) => setFirstName(event.target.value)}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: 12,
-            }}
-          />
-        </div>
+        <h1>Join Career Club Connect</h1>
+        <p className="auth-description">Create your account and start connecting.</p>
 
-        <div style={{ marginTop: 16 }}>
-          <label htmlFor="lastName">Last name</label>
-          <input
-            id="lastName"
-            type="text"
-            required
-            autoComplete="family-name"
-            value={lastName}
-            onChange={(event) => setLastName(event.target.value)}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: 12,
-            }}
-          />
-        </div>
+        <form className="auth-form" onSubmit={handleSubmit}>
+          
+          <div className="auth-field">
+            <label htmlFor="firstName">First name</label>
+            <input
+              id="firstName"
+              type="text"
+              autoComplete="given-name"
+              required
+              value={firstName}
+              onChange={(event) => setFirstName(event.target.value)}
+            />
+          </div>
+          <div className="auth-field">
+            <label htmlFor="lastName">Last name</label>
+            <input
+              id="lastName"
+              type="text"
+              autoComplete="family-name"
+              required
+              value={lastName}
+              onChange={(event) => setLastName(event.target.value)}
+            />
+          </div>
 
-        <div style={{ marginTop: 16 }}>
-          <label htmlFor="username">Username</label>
-          <input
-            id="username"
-            type="text"
-            required
-            autoComplete="username"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: 12,
-            }}
-          />
-        </div>
+          <div className="auth-field">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </div>
+          <div className="auth-field">
+            <label htmlFor="password">Password</label>
+            <div className="auth-password-wrap">
+              <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              required minLength={8}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+              <button
+                type="button"
+                className="auth-password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+          </div>
 
-        <div style={{ marginTop: 16 }}>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            required
-            autoComplete="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: 12,
-            }}
-          />
-        </div>
+          {error && (
+            <p role="alert" className="auth-error">
+              {error}
+            </p>
+          )}
 
-        <div style={{ marginTop: 16 }}>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            required
-            minLength={8}
-            autoComplete="new-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: 12,
-            }}
-          />
-        </div>
+          <div className="auth-field">
+            <label htmlFor="confirmPassword">Confirm password</label>
+            <div className="auth-password-wrap">
+              <input
+              id="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              autoComplete="new-password"
+              required
+              minLength={8}
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+            />
+              <button
+                type="button"
+                className="auth-password-toggle"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                aria-pressed={showConfirmPassword}
+              >
+                {showConfirmPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+          </div>
 
-        {error && (
-          <p
-            role="alert"
-            style={{
-              color: "crimson",
-              marginTop: 16,
-            }}
+          {password !== confirmPassword && confirmPassword.length > 0 && (
+            <p className="auth-error" role="status">
+              Passwords do not match.
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="auth-submit"
+            disabled={loading || password !== confirmPassword}
           >
-            {error}
-          </p>
-        )}
+            {loading ? "Creating account..." : "Create account"}
+          </button>
+        </form>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            marginTop: 24,
-            padding: "12px 24px",
-            cursor: loading ? "wait" : "pointer",
-          }}
-        >
-          {loading ? "Creating account..." : "Create account"}
-        </button>
-      </form>
-
-      <p style={{ marginTop: 24 }}>
-        Already have an account?{" "}
-        <Link href="/login">Log in</Link>
-      </p>
+        <p className="auth-footer">
+          Already have an account?{" "}<Link href="/login">Log in</Link>
+        </p>
+      </section>
     </main>
   );
 }

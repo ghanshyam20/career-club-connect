@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import MemberAvatar from "@/components/MemberAvatar";
 
 type Experience = {
   id: number;
@@ -34,24 +35,18 @@ export default function DashboardHighlight() {
         const data: Experience[] = await response.json();
 
         if (active) {
-          const approved = data.filter(
-            (item) => item.status === "approved"
+          setExperience(
+            data.find((item) => item.status === "approved") ?? null
           );
-
-          setExperience(approved[0] ?? null);
         }
       } catch {
-        if (active) {
-          setExperience(null);
-        }
+        if (active) setExperience(null);
       } finally {
-        if (active) {
-          setLoading(false);
-        }
+        if (active) setLoading(false);
       }
     }
 
-    loadHighlight();
+    void loadHighlight();
 
     return () => {
       active = false;
@@ -59,51 +54,72 @@ export default function DashboardHighlight() {
   }, []);
 
   return (
-    <section
-      style={{
-        marginTop: 28,
-        padding: 24,
-        background: "#ffffff",
-        border: "1px solid #dce4ed",
-        borderRadius: 18,
-      }}
-    >
-      <h2 style={{ marginTop: 0 }}>Today&apos;s Highlight</h2>
+    <section className="dashboard-highlight-section">
+      <div className="dashboard-section-heading">
+        <div>
+          <span className="dashboard-eyebrow">FROM OUR COMMUNITY</span>
+          <h2>Featured career experience</h2>
+        </div>
+        <Link href="/experiences" className="dashboard-browse-link">
+          Browse library
+        </Link>
+      </div>
 
-      {loading ? (
-        <p>Loading a career experience...</p>
-      ) : experience ? (
-        <>
-          <p
-            style={{
-              color: "#1769e0",
-              fontWeight: 700,
-              marginBottom: 8,
-            }}
-          >
-            {experience.title}
+      <div className="dashboard-highlight-card">
+        <div className="dashboard-highlight-accent" aria-hidden="true" />
+
+        {loading ? (
+          <p className="dashboard-highlight-muted">
+            Finding a career story for you...
           </p>
+        ) : experience ? (
+          <>
+            <div className="dashboard-highlight-meta">
+              <span className="dashboard-highlight-badge">
+                FEATURED STORY
+              </span>
+              <span className="dashboard-highlight-category">
+                {experience.category.replaceAll("_", " ")}
+              </span>
+            </div>
 
-          <p style={{ color: "#42566f", lineHeight: 1.7 }}>
-            {experience.content}
-          </p>
+            <h3>{experience.title}</h3>
 
-          <p style={{ color: "#64748b", fontSize: 13 }}>
-            Shared by {experience.author_name}
-          </p>
+            <p className="dashboard-highlight-excerpt">
+              {experience.content.length > 240
+                ? `${experience.content.slice(0, 240).trimEnd()}…`
+                : experience.content}
+            </p>
 
-          <Link href="/experiences">
-            Explore more experiences →
-          </Link>
-        </>
-      ) : (
-        <>
-          <p>No approved career experiences available yet.</p>
-          <Link href="/experiences">
-            Explore Experience Library →
-          </Link>
-        </>
-      )}
+            <div className="dashboard-highlight-footer">
+              <div className="dashboard-highlight-author">
+                <MemberAvatar name={experience.author_name} size={42} />
+                <div>
+                  <strong>{experience.author_name}</strong>
+                  <span>
+                    {new Date(experience.created_at).toLocaleDateString(
+                      undefined,
+                      { month: "short", day: "numeric", year: "numeric" }
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <Link href="/experiences" className="dashboard-highlight-button">
+                Explore story
+              </Link>
+            </div>
+          </>
+        ) : (
+          <div className="dashboard-highlight-empty">
+            <h3>Your next story could inspire someone.</h3>
+            <p>Share what you&apos;ve learned with the Career Club community.</p>
+            <Link href="/experiences" className="dashboard-highlight-button">
+              Visit Experience Library
+            </Link>
+          </div>
+        )}
+      </div>
     </section>
   );
 }

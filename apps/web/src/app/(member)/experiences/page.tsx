@@ -12,6 +12,7 @@ type Experience = {
   content: string;
   publish_anonymously: boolean;
   author_name: string;
+  author_id: number | null;
   status: string;
   created_at: string;
 };
@@ -294,7 +295,14 @@ export default function ExperiencesPage() {
                 {categoryLabel(experience.category)}
               </span>
 
-              <h3 style={{ marginTop: 14 }}>{experience.title}</h3>
+              <h3 style={{ marginTop: 14 }}>
+                <Link
+                  href={`/experiences/${experience.id}`}
+                  className="experiences-title-link"
+                >
+                  {experience.title}
+                </Link>
+              </h3>
 
               <div className="experiences-meta">
                 <span>By {experience.author_name}</span>
@@ -308,7 +316,17 @@ export default function ExperiencesPage() {
                 </time>
               </div>
 
-              <p style={{ whiteSpace: "pre-wrap" }}>{experience.content}</p>
+              <p className="experiences-preview">
+                {experience.content.length > 190
+                  ? `${experience.content.slice(0, 190).trimEnd()}…`
+                  : experience.content}
+              </p>
+              <Link
+                href={`/experiences/${experience.id}`}
+                className="experiences-read-link"
+              >
+                Read full experience
+              </Link>
             </article>
           ))}
         </section>

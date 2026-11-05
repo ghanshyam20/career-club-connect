@@ -212,3 +212,50 @@
     margin-top: 16px;
   }
 }
+/* Experience Library reading links */
+
+.experiences-title-link {
+  color: #102b50;
+  text-decoration: none;
+  transition: color .15s ease;
+}
+
+.experiences-title-link:hover {
+  color: #1769e0;
+}
+
+.experiences-title-link:focus-visible,
+.experiences-read-link:focus-visible {
+  outline: 3px solid #1769e0;
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+
+.experiences-preview {
+  color: #52657d;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.experiences-read-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: #1769e0;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.experiences-read-link:hover {
+  text-decoration: underline;
+}
+
+.experiences-card {
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.experiences-card:hover {
+  border-color: #bdd5fa;
+  box-shadow: 0 10px 26px rgba(16, 43, 80, .055);
+}

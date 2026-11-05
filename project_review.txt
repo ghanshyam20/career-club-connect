@@ -1,0 +1,1586 @@
+
+
+=================================================================
+FILE: apps/web/src/app/(member)/profile/page.tsx
+=================================================================
+
+"use client";
+
+import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+type MemberProfile = {
+  username: string;
+  career_club_round: number | null;
+  bio: string;
+  skills: string;
+  career_interests: string;
+};
+
+export default function ProfilePage() {
+  const router = useRouter();
+
+  const [profile, setProfile] = useState<MemberProfile | null>(null);
+  const [round, setRound] = useState("");
+  const [bio, setBio] = useState("");
+  const [skills, setSkills] = useState("");
+  const [interests, setInterests] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadProfile() {
+      try {
+        const response = await fetch("/api/v1/profiles/me/", {
+          credentials: "same-origin",
+          cache: "no-store",
+        });
+
+        if (response.status === 401 || response.status === 403) {
+          router.replace("/login");
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error("Could not load your member profile.");
+        }
+
+        const data: MemberProfile = await response.json();
+
+        if (!active) return;
+
+        setProfile(data);
+        setRound(
+          data.career_club_round === null
+            ? ""
+            : String(data.career_club_round)
+        );
+        setBio(data.bio);
+        setSkills(data.skills);
+        setInterests(data.career_interests);
+      } catch (err) {
+        if (active) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Could not connect to the server."
+          );
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadProfile();
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
+
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const csrfResponse = await fetch("/api/v1/auth/csrf/", {
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+
+      if (!csrfResponse.ok) {
+        throw new Error("Could not prepare your profile update.");
+      }
+
+      const { csrfToken } = await csrfResponse.json();
+
+      const response = await fetch("/api/v1/profiles/me/", {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        body: JSON.stringify({
+          career_club_round: round === "" ? null : Number(round),
+          bio,
+          skills,
+          career_interests: interests,
+        }),
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        router.replace("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        const details = await response.json().catch(() => null);
+        const message = details
+          ? Object.entries(details)
+              .map(([field, value]) => `${field}: ${String(value)}`)
+              .join("; ")
+          : "Could not save your profile.";
+
+        throw new Error(message);
+      }
+
+      const updated: MemberProfile = await response.json();
+      setProfile(updated);
+      setSuccess("Your profile has been saved successfully.");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Something went wrong."
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return <main style={{ padding: 32 }}>Loading your profile...</main>;
+  }
+
+  if (!profile) {
+    return (
+      <main style={{ padding: 32 }}>
+        <p role="alert">{error || "Profile unavailable."}</p>
+        <Link href="/dashboard">Back to dashboard</Link>
+      </main>
+    );
+  }
+
+  const fieldStyle = {
+    width: "100%",
+    padding: 12,
+    marginTop: 6,
+    marginBottom: 20,
+    border: "1px solid #999",
+    borderRadius: 6,
+    boxSizing: "border-box" as const,
+  };
+
+  return (
+    <main style={{ maxWidth: 680, margin: "40px auto", padding: 24 }}>
+      <Link href="/dashboard">← Back to dashboard</Link>
+
+      <h1 style={{ marginTop: 24 }}>My Career Club Profile</h1>
+      <p>Signed in as {profile.username}</p>
+
+      <form onSubmit={handleSave} style={{ marginTop: 28 }}>
+        <label htmlFor="round">Career Club round</label>
+        <input
+          id="round"
+          type="number"
+          min="1"
+          max="32767"
+          value={round}
+          onChange={(event) => setRound(event.target.value)}
+          placeholder="Example: 12"
+          style={fieldStyle}
+        />
+
+        <label htmlFor="bio">Short introduction</label>
+        <textarea
+          id="bio"
+          value={bio}
+          onChange={(event) => setBio(event.target.value)}
+          maxLength={500}
+          rows={4}
+          placeholder="Tell other members a little about yourself."
+          style={fieldStyle}
+        />
+
+        <label htmlFor="skills">My skills</label>
+        <textarea
+          id="skills"
+          value={skills}
+          onChange={(event) => setSkills(event.target.value)}
+          maxLength={500}
+          rows={3}
+          placeholder="Example: Python, SQL, customer service"
+          style={fieldStyle}
+        />
+
+        <label htmlFor="interests">Career interests</label>
+        <textarea
+          id="interests"
+          value={interests}
+          onChange={(event) => setInterests(event.target.value)}
+          maxLength={500}
+          rows={3}
+          placeholder="Example: Data analytics, software development"
+          style={fieldStyle}
+        />
+
+        {error && <p role="alert" style={{ color: "crimson" }}>{error}</p>}
+        {success && <p role="status" style={{ color: "green" }}>{success}</p>}
+
+        <button
+          type="submit"
+          disabled={saving}
+          style={{
+            padding: "12px 24px",
+            cursor: saving ? "wait" : "pointer",
+          }}
+        >
+          {saving ? "Saving..." : "Save profile"}
+        </button>
+      </form>
+    </main>
+  );
+}
+
+
+=================================================================
+FILE: apps/web/src/app/(member)/search/page.tsx
+=================================================================
+"use client";
+
+import { FormEvent, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import "./search.css";
+
+type Member = { id: number; username: string; name: string };
+type Experience = { id: number; title: string; category: string; excerpt: string };
+type Post = { id: number; category: string; excerpt: string };
+type Results = {
+  members: Member[];
+  experiences: Experience[];
+  posts: Post[];
+};
+type Filter = "all" | "members" | "experiences" | "posts";
+
+export default function SearchPage() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<Results | null>(null);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setResults(null);
+
+    if (!query.trim()) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `/api/v1/search/?q=${encodeURIComponent(query.trim())}`,
+        { credentials: "same-origin", cache: "no-store" },
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        router.replace("/login");
+        return;
+      }
+
+      if (!response.ok) throw new Error("Search failed. Please try again.");
+
+      const data: Results = await response.json();
+      setResults(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Connection failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const showMembers = filter === "all" || filter === "members";
+  const showExperiences = filter === "all" || filter === "experiences";
+  const showPosts = filter === "all" || filter === "posts";
+
+  return (
+    <main className="search-page">
+      <header className="search-heading">
+        <h1>Search & Explore</h1>
+        <p>Discover members, career experiences, and community discussions.</p>
+      </header>
+
+      <form className="search-form" onSubmit={handleSearch}>
+        <input
+          aria-label="Search Career Club"
+          placeholder="Search people, skills, experiences, or posts..."
+          value={query}
+          maxLength={100}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        <button type="submit" disabled={loading}>
+          {loading ? "Searching..." : "Search"}
+        </button>
+      </form>
+
+      <div className="search-filters">
+        {(["all", "members", "experiences", "posts"] as Filter[]).map((item) => (
+          <button
+            key={item}
+            type="button"
+            className={filter === item ? "active" : ""}
+            onClick={() => setFilter(item)}
+          >
+            {item === "all" ? "All" : item === "posts" ? "Community" :
+              item.charAt(0).toUpperCase() + item.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {error && <p role="alert" className="search-error">{error}</p>}
+
+      {!results && !loading && !error && (
+        <p className="search-empty">Enter a keyword to start exploring.</p>
+      )}
+
+      {results && (
+        <div className="search-results">
+          {showMembers && (
+            <section>
+              <h2>Members ({results.members.length})</h2>
+              {results.members.map((member) => (
+                <article className="search-card" key={member.id}>
+                  <h3>{member.name}</h3>
+                  <p>@{member.username}</p>
+                  <Link href={`/members/${member.id}`}>View participant profile</Link>
+                </article>
+              ))}
+              {results.members.length === 0 && <p>No matching members.</p>}
+            </section>
+          )}
+
+          {showExperiences && (
+            <section>
+              <h2>Experiences ({results.experiences.length})</h2>
+              {results.experiences.map((experience) => (
+                <article className="search-card" key={experience.id}>
+                  <h3>{experience.title}</h3>
+                  <p>{experience.excerpt}</p>
+                  <Link href="/experiences">Explore experiences</Link>
+                </article>
+              ))}
+              {results.experiences.length === 0 && <p>No matching experiences.</p>}
+            </section>
+          )}
+
+          {showPosts && (
+            <section>
+              <h2>Community ({results.posts.length})</h2>
+              {results.posts.map((post) => (
+                <article className="search-card" key={post.id}>
+                  <h3>{post.category.replaceAll("_", " ")}</h3>
+                  <p>{post.excerpt}</p>
+                  <Link href="/community">View community feed</Link>
+                </article>
+              ))}
+              {results.posts.length === 0 && <p>No matching posts.</p>}
+            </section>
+          )}
+        </div>
+      )}
+    </main>
+  );
+}
+
+
+=================================================================
+FILE: apps/web/src/app/(member)/dashboard/page.tsx
+=================================================================
+
+"use client";
+
+import MemberAvatar from "@/components/MemberAvatar";
+import DashboardFeatureCards from "@/components/DashboardFeatureCards";
+import DashboardHighlight from "@/components/DashboardHighlight";
+
+import "./dashboard.css";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+type Member = {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+};
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const [member, setMember] = useState<Member | null>(null);
+  const [error, setError] = useState("");
+
+
+const [loggingOut, setLoggingOut] = useState(false);
+
+async function handleLogout() {
+  setLoggingOut(true);
+  setError("");
+
+  try {
+    const csrfResponse = await fetch("/api/v1/auth/csrf/", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+
+    if (!csrfResponse.ok) {
+      throw new Error("Could not prepare logout.");
+    }
+
+    const { csrfToken } = await csrfResponse.json();
+
+    const response = await fetch("/api/v1/auth/logout/", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "X-CSRFToken": csrfToken,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Logout failed. Please try again.");
+    }
+
+    router.replace("/login");
+    router.refresh();
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Something went wrong."
+    );
+  } finally {
+    setLoggingOut(false);
+  }
+}
+
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadMember() {
+      try {
+        const response = await fetch("/api/v1/auth/me/", {
+          credentials: "same-origin",
+          cache: "no-store",
+        });
+
+        if (response.status === 401 || response.status === 403) {
+          router.replace("/login");
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error("Could not load your profile.");
+        }
+
+        const data: Member = await response.json();
+
+        if (active) {
+          setMember(data);
+        }
+      } catch {
+        if (active) {
+          setError("Could not connect to the server. Please try again.");
+        }
+      }
+    }
+
+    loadMember();
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
+
+  if (error) {
+    return <main style={{ padding: 32 }}><p role="alert">{error}</p></main>;
+  }
+
+  if (!member) {
+    return <main style={{ padding: 32 }}>Loading your dashboard...</main>;
+  }
+
+  return (
+    <>
+      
+      <main className="dashboard-page">
+      
+      
+      
+  <header
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 20,
+    padding: 24,
+    background: "#ffffff",
+    border: "1px solid #dce4ed",
+    borderRadius: 18,
+    boxShadow: "0 8px 24px rgba(16, 43, 78, 0.06)",
+  }}
+>
+
+  <div>
+    <p
+      style={{
+        margin: "0 0 8px",
+        color: "#1769e0",
+        fontSize: 13,
+        fontWeight: 700,
+        letterSpacing: 1,
+      }}
+    >
+      CAREER CLUB CONNECT
+    </p>
+
+    <h1 style={{ margin: "0 0 8px" }}>
+      Welcome back, {member.first_name || member.username}!
+    </h1>
+
+    <p style={{ margin: 0, color: "#5c6b7c" }}>
+      Connect, share experiences, and take your next career step.
+    </p>
+  </div>
+
+  <MemberAvatar
+    name={
+      [member.first_name, member.last_name]
+        .filter(Boolean)
+        .join(" ") || member.username
+    }
+    size={72}
+  />
+</header>
+
+<DashboardFeatureCards />
+<DashboardHighlight />
+
+
+
+
+<button
+  type="button"
+  onClick={handleLogout}
+  disabled={loggingOut}
+  style={{
+    marginTop: 32,
+    padding: "12px 24px",
+    cursor: "pointer",
+  }}
+>
+  {loggingOut ? "Logging out..." : "Log out"}
+</button>
+
+    </main>
+    </>
+  );
+}
+
+=================================================================
+FILE: apps/web/src/app/login/page.tsx
+=================================================================
+
+"use client";
+
+import { useState } from "react";
+import type { FormEvent } from "react";
+import { useRouter } from "next/navigation";
+
+export default function LoginPage() {
+  const router = useRouter();
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      // Get a CSRF token and cookie from Django.
+      const csrfResponse = await fetch("/api/v1/auth/csrf/", {
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+
+      if (!csrfResponse.ok) {
+        throw new Error("Could not start a secure login.");
+      }
+
+      const { csrfToken } = await csrfResponse.json();
+
+      // Send login details to Django through Next.js.
+      const loginResponse = await fetch("/api/v1/auth/login/", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!loginResponse.ok) {
+        if (loginResponse.status === 400) {
+          throw new Error("Incorrect username or password.");
+        }
+        throw new Error("Login failed. Please try again.");
+      }
+
+      setPassword("");
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Something went wrong."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main style={{ maxWidth: 420, margin: "80px auto", padding: 24 }}>
+      <h1>Welcome back</h1>
+      <p>Log in to Career Club Connect.</p>
+
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginTop: 24 }}>
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            type="text"
+            autoComplete="username"
+            required
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            style={{ display: "block", width: "100%", padding: 12 }}
+          />
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            style={{ display: "block", width: "100%", padding: 12 }}
+          />
+        </div>
+
+        {error && (
+          <p role="alert" style={{ color: "crimson", marginTop: 16 }}>
+            {error}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{ marginTop: 24, padding: "12px 24px" }}
+        >
+          {loading ? "Logging in..." : "Log in"}
+        </button>
+      </form>
+
+      <p style={{ marginTop: 24 }}>
+        New to Career Club Connect? Registration is coming soon.
+      </p>
+    </main>
+  );
+}
+
+
+=================================================================
+FILE: apps/web/src/app/register/page.tsx
+=================================================================
+
+"use client";
+
+import { useState } from "react";
+import type { FormEvent } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+export default function RegisterPage() {
+  const router = useRouter();
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      // Get the CSRF token from Django.
+      const csrfResponse = await fetch("/api/v1/auth/csrf/", {
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+
+      if (!csrfResponse.ok) {
+        throw new Error("Could not prepare registration.");
+      }
+
+      const csrfData = await csrfResponse.json();
+      const csrfToken = csrfData.csrfToken;
+
+      // Send registration details to Django.
+      const response = await fetch("/api/v1/auth/register/", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        body: JSON.stringify({
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          username: username.trim(),
+          email: email.trim(),
+          password,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+
+        if (data && typeof data === "object") {
+          const messages = Object.entries(data).flatMap(
+            ([field, value]) => {
+              const details = Array.isArray(value) ? value : [value];
+
+              return details.map(
+                (message) => `${field}: ${String(message)}`
+              );
+            }
+          );
+
+          if (messages.length > 0) {
+            throw new Error(messages.join(" "));
+          }
+        }
+
+        throw new Error("Registration failed. Please try again.");
+      }
+
+      // Registration succeeded.
+      setPassword("");
+      router.push("/login");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main
+      style={{
+        maxWidth: 460,
+        margin: "60px auto",
+        padding: 24,
+      }}
+    >
+      <h1>Join Career Club Connect</h1>
+      <p>Create your account to get started.</p>
+
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginTop: 20 }}>
+          <label htmlFor="firstName">First name</label>
+          <input
+            id="firstName"
+            type="text"
+            required
+            autoComplete="given-name"
+            value={firstName}
+            onChange={(event) => setFirstName(event.target.value)}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: 12,
+            }}
+          />
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <label htmlFor="lastName">Last name</label>
+          <input
+            id="lastName"
+            type="text"
+            required
+            autoComplete="family-name"
+            value={lastName}
+            onChange={(event) => setLastName(event.target.value)}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: 12,
+            }}
+          />
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            type="text"
+            required
+            autoComplete="username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: 12,
+            }}
+          />
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: 12,
+            }}
+          />
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            required
+            minLength={8}
+            autoComplete="new-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: 12,
+            }}
+          />
+        </div>
+
+        {error && (
+          <p
+            role="alert"
+            style={{
+              color: "crimson",
+              marginTop: 16,
+            }}
+          >
+            {error}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            marginTop: 24,
+            padding: "12px 24px",
+            cursor: loading ? "wait" : "pointer",
+          }}
+        >
+          {loading ? "Creating account..." : "Create account"}
+        </button>
+      </form>
+
+      <p style={{ marginTop: 24 }}>
+        Already have an account?{" "}
+        <Link href="/login">Log in</Link>
+      </p>
+    </main>
+  );
+}
+
+
+=================================================================
+FILE: apps/web/src/components/AppNavigation.tsx
+=================================================================
+
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import "./AppNavigation.css";
+
+const navigation = [
+  { label: "Home", href: "/dashboard", icon: "⌂" },
+  { label: "Explore", href: "/search", icon: "⌕" },
+  { label: "Community", href: "/community", icon: "▤" },
+  { label: "Coffee Buddy", href: "/coffee-buddy", icon: "☕" },
+  { label: "Notifications", href: "/notifications", icon: "♧" },
+  { label: "My Actions", href: "/my-actions", icon: "☑" },
+  { label: "Profile", href: "/profile", icon: "♙" },
+  { label: "Settings", href: "/settings", icon: "⚙" },
+];
+
+export default function AppNavigation() {
+  const pathname = usePathname();
+  const [isModerator, setIsModerator] = useState(false);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const response = await fetch("/api/v1/auth/me/", {
+          credentials: "same-origin",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          setIsModerator(false);
+          return;
+        }
+
+        const user: { is_staff?: boolean } = await response.json();
+        setIsModerator(user.is_staff === true);
+      } catch {
+        setIsModerator(false);
+      }
+    };
+
+    void checkRole();
+  }, [pathname]);
+
+  const visibleNavigation = isModerator
+    ? [
+        ...navigation,
+        { label: "Moderator", href: "/moderation", icon: "⚙" },
+      ]
+    : navigation;
+
+  return (
+    <>
+      <aside className="app-sidebar" aria-label="Main navigation">
+        <Link className="app-brand" href="/dashboard">
+          <span className="app-brand-mark">CC</span>
+          <span>
+            Career Club
+            <strong>Connect</strong>
+          </span>
+        </Link>
+
+        <nav className="app-nav-links">
+          {visibleNavigation.map((item) => {
+            const active = item.href === pathname;
+
+            return item.href ? (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`app-nav-link ${active ? "active" : ""}`}
+                aria-current={active ? "page" : undefined}
+              >
+                <span className="app-nav-icon" aria-hidden="true">
+                  {item.icon}
+                </span>
+                {item.label}
+              </Link>
+            ) : (
+              <span
+                key={item.label}
+                className="app-nav-link disabled"
+                title="Coming soon"
+              >
+                <span className="app-nav-icon" aria-hidden="true">
+                  {item.icon}
+                </span>
+                {item.label}
+              </span>
+            );
+          })}
+        </nav>
+
+        
+      </aside>
+
+      <nav className="app-bottom-nav" aria-label="Mobile navigation">
+        {visibleNavigation.map((item) => {
+          const active = item.href === pathname;
+
+          return item.href ? (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={`app-bottom-link ${active ? "active" : ""}`}
+              aria-current={active ? "page" : undefined}
+            >
+              <span aria-hidden="true">{item.icon}</span>
+              <small>{item.label}</small>
+            </Link>
+          ) : (
+            <span
+              key={item.label}
+              className="app-bottom-link disabled"
+              title="Coming soon"
+            >
+              <span aria-hidden="true">{item.icon}</span>
+              <small>{item.label}</small>
+            </span>
+          );
+        })}
+      </nav>
+    </>
+  );
+}
+
+
+=================================================================
+FILE: apps/web/src/components/CookieNotice.tsx
+=================================================================
+"use client";
+
+import { useEffect, useState } from "react";
+import "./cookie-notice.css";
+
+const STORAGE_KEY = "career-club-cookie-notice-v1";
+
+export default function CookieNotice() {
+  const [visible, setVisible] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const loadCookiePreference = async () => {
+      let shouldShow = true;
+
+      try {
+        shouldShow =
+          localStorage.getItem(STORAGE_KEY) !== "acknowledged";
+      } catch {
+        shouldShow = true;
+      }
+
+      setVisible(shouldShow);
+      setReady(true);
+    };
+
+    void loadCookiePreference();
+  }, []);
+
+  function acknowledge() {
+    try {
+      localStorage.setItem(STORAGE_KEY, "acknowledged");
+    } catch {
+      // Storage may be unavailable in private browsing.
+    }
+    setVisible(false);
+  }
+
+  if (!ready) return null;
+
+  return (
+    <>
+      {visible && (
+        <section
+          className="cookie-notice"
+          aria-label="Cookie information"
+        >
+          <div className="cookie-notice-content">
+            <div className="cookie-notice-icon" aria-hidden="true">
+              🍪
+            </div>
+
+            <div className="cookie-notice-text">
+              <h2>Cookies and your privacy</h2>
+              <p>
+                Career Club Connect uses essential cookies to
+                keep you signed in and protect your account.
+                We do not currently use optional analytics
+                or advertising cookies.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={acknowledge}
+              className="cookie-notice-button"
+            >
+              OK, understood
+            </button>
+          </div>
+        </section>
+      )}
+
+      {!visible && (
+        <button
+          type="button"
+          className="cookie-settings-trigger"
+          onClick={() => setVisible(true)}
+          aria-label="View cookie information"
+          title="Cookie information"
+        >
+          Cookies
+        </button>
+      )}
+    </>
+  );
+}
+
+
+=================================================================
+FILE: apps/web/src/app/layout.tsx
+=================================================================
+import type { Metadata } from 'next';
+import './globals.css';
+import CookieNotice from '../components/CookieNotice';
+export const metadata: Metadata = { title: 'Career Club Connect — Local Foundation', description: 'Independent fictional-data career development demo' };
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return <html lang="en"><body>{children}<CookieNotice /></body></html>;
+}
+
+
+=================================================================
+FILE: apps/web/src/app/globals.css
+=================================================================
+* { box-sizing: border-box; }
+body { margin: 0; background: #f6f9fc; color: #17253b; font: 16px/1.6 system-ui, sans-serif; }
+main {
+  width: 100%;
+  min-width: 0;
+}
+h1 { color: #102b4e; line-height: 1.2; }
+button { background: #1769e0; color: white; border: 0; padding: 12px 18px; border-radius: 8px; font: inherit; cursor: pointer; }
+button:focus-visible { outline: 3px solid #102b4e; outline-offset: 3px; }
+small { color: #5c6b7c; }
+pre { overflow-x: auto; padding: 12px; background: #eef4fc; }
+
+/* Career Club Connect — Design System */
+
+:root {
+  --color-primary: #1769e0;
+  --color-primary-dark: #1053b8;
+  --color-navy: #102b4e;
+  --color-text: #17253b;
+  --color-muted: #5c6b7c;
+  --color-background: #f6f9fc;
+  --color-surface: #ffffff;
+  --color-border: #dce4ed;
+  --color-success: #059669;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  --shadow-card: 0 8px 24px rgba(16, 43, 78, 0.06);
+}
+
+/* Reusable layout */
+
+.app-container {
+  width: min(100% - 32px, 1120px);
+  margin-inline: auto;
+}
+
+.app-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+}
+
+/* Reusable buttons */
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  border: 1px solid var(--color-primary);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-dark);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: var(--color-navy);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: #eef4fc;
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible {
+  outline: 3px solid var(--color-navy);
+  outline-offset: 3px;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mobile adjustments */
+
+@media (max-width: 640px) {
+  .app-card {
+    padding: 18px;
+    border-radius: var(--radius-md);
+  }
+
+  .app-container {
+    width: min(100% - 24px, 1120px);
+  }
+}
+
+
+/* Shared member layout */
+
+.member-shell {
+  min-height: 100vh;
+}
+
+.member-content {
+  min-width: 0;
+  margin-left: 238px;
+  padding: 24px;
+}
+
+.member-content > main {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .member-content {
+    margin-left: 0;
+    padding: 16px 12px 100px;
+  }
+
+  .member-content > main {
+    max-width: 100%;
+  }
+}
+
+=================================================================
+FILE: apps/api/search/views.py
+=================================================================
+from django.db.models import Q
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from accounts.models import User
+from experiences.models import Experience
+from forum.models import CommunityPost
+
+
+class SearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = request.query_params.get("q", "").strip()
+
+        if not query:
+            return Response({
+                "members": [],
+                "experiences": [],
+                "posts": [],
+            })
+
+        if len(query) > 100:
+            return Response(
+                {"detail": "Search must be 100 characters or fewer."},
+                status=400,
+            )
+
+        members = User.objects.filter(
+            Q(username__icontains=query)
+            | Q(first_name__icontains=query)
+            | Q(last_name__icontains=query)
+            | Q(member_profile__skills__icontains=query)
+            | Q(member_profile__bio__icontains=query)
+            | Q(member_profile__career_interests__icontains=query)
+        ).distinct().order_by("username")[:10]
+
+        experiences = Experience.objects.filter(
+            Q(title__icontains=query) | Q(content__icontains=query),
+            status=Experience.Status.APPROVED,
+        ).order_by("-created_at")[:10]
+
+        posts = CommunityPost.objects.filter(
+            Q(content__icontains=query) | Q(category__icontains=query)
+        ).order_by("-created_at")[:10]
+
+        return Response({
+            "members": [
+                {
+                    "id": member.id,
+                    "username": member.username,
+                    "name": member.get_full_name() or member.username,
+                }
+                for member in members
+            ],
+            "experiences": [
+                {
+                    "id": experience.id,
+                    "title": experience.title,
+                    "category": experience.category,
+                    "excerpt": experience.content[:180],
+                }
+                for experience in experiences
+            ],
+            "posts": [
+                {
+                    "id": post.id,
+                    "category": post.category,
+                    "excerpt": post.content[:180],
+                }
+                for post in posts
+            ],
+        })
+
+
+=================================================================
+FILE: apps/api/profiles/views.py
+=================================================================
+
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+
+from .models import MemberProfile
+from .serializers import MemberProfileSerializer
+
+
+class MyProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = MemberProfileSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ["get", "patch", "head", "options"]
+
+    def get_object(self):
+        profile, created = MemberProfile.objects.get_or_create(
+            user=self.request.user
+        )
+        return profile
+
+
+class MemberDetailView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        from django.contrib.auth import get_user_model
+        from django.shortcuts import get_object_or_404
+        from rest_framework.response import Response
+        from experiences.models import Experience
+        from forum.models import CommunityPost
+
+        User = get_user_model()
+        user = get_object_or_404(User, pk=pk)
+        profile = MemberProfile.objects.filter(user=user).first()
+
+        experiences = Experience.objects.filter(
+            author=user,
+            status=Experience.Status.APPROVED,
+            publish_anonymously=False,
+        ).order_by("-created_at")
+
+        posts = CommunityPost.objects.filter(
+            author=user,
+        ).order_by("-created_at")
+
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "name": user.get_full_name() or user.username,
+            "career_club_round": (
+                profile.career_club_round if profile else None
+            ),
+            "bio": profile.bio if profile else "",
+            "skills": profile.skills if profile else "",
+            "career_interests": (
+                profile.career_interests if profile else ""
+            ),
+            "experiences": [
+                {
+                    "id": item.id,
+                    "title": item.title,
+                    "category": item.category,
+                    "content": item.content,
+                    "created_at": item.created_at,
+                }
+                for item in experiences
+            ],
+            "posts": [
+                {
+                    "id": item.id,
+                    "category": item.category,
+                    "content": item.content,
+                    "created_at": item.created_at,
+                }
+                for item in posts
+            ],
+        })
+
+
+=================================================================
+FILE: apps/api/profiles/models.py
+=================================================================
+
+from django.conf import settings
+from django.db import models
+
+
+class MemberProfile(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="member_profile",
+    )
+
+    career_club_round = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+    )
+
+    bio = models.TextField(
+        max_length=500,
+        blank=True,
+    )
+
+    skills = models.TextField(
+        max_length=500,
+        blank=True,
+    )
+
+    career_interests = models.TextField(
+        max_length=500,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s profile"
+
+
+=================================================================
+FILE: apps/api/profiles/serializers.py
+=================================================================
+
+from rest_framework import serializers
+
+from .models import MemberProfile
+
+
+class MemberProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        source="user.username",
+        read_only=True,
+    )
+
+    class Meta:
+        model = MemberProfile
+        fields = [
+            "username",
+            "career_club_round",
+            "bio",
+            "skills",
+            "career_interests",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "username",
+            "created_at",
+            "updated_at",
+        ]
+
+    def validate_career_club_round(self, value):
+        if value is not None and value < 1:
+            raise serializers.ValidationError(
+                "Career Club round must be at least 1."
+            )
+        return value
+
+
+=== DEMO DATA FILES ===
+
+apps/api/profiles/management/__init__.py
+
+apps/api/profiles/management/commands/__init__.py
+
+apps/api/profiles/management/commands/seed_demo_participants.py
+
+=== WEB CSS FILES ===
+
+apps/web/src/app/(member)/dashboard/dashboard.css
+
+apps/web/src/app/(member)/experiences/experiences.css
+
+apps/web/src/app/(member)/members/[id]/member.css
+
+apps/web/src/app/(member)/moderation/moderation.css
+
+apps/web/src/app/(member)/notifications/notifications.css
+
+apps/web/src/app/(member)/search/search.css
+
+apps/web/src/app/(member)/settings/settings.css
+
+apps/web/src/app/coffee-buddy-polish.css
+
+apps/web/src/app/globals.css
+
+apps/web/src/app/landing.css
+
+apps/web/src/components/AppNavigation.css
+
+apps/web/src/components/cookie-notice.css

@@ -14,36 +14,41 @@ class SearchView(APIView):
     def get(self, request):
         query = request.query_params.get("q", "").strip()
 
-        if not query:
-            return Response({
-                "members": [],
-                "experiences": [],
-                "posts": [],
-            })
-
         if len(query) > 100:
             return Response(
                 {"detail": "Search must be 100 characters or fewer."},
                 status=400,
             )
 
-        members = User.objects.filter(
-            Q(username__icontains=query)
-            | Q(first_name__icontains=query)
-            | Q(last_name__icontains=query)
-            | Q(member_profile__skills__icontains=query)
-            | Q(member_profile__bio__icontains=query)
-            | Q(member_profile__career_interests__icontains=query)
-        ).distinct().order_by("username")[:10]
+        members = User.objects.select_related("member_profile")
+
+        if query:
+            members = members.filter(
+                Q(username__icontains=query)
+                | Q(first_name__icontains=query)
+                | Q(last_name__icontains=query)
+                | Q(member_profile__skills__icontains=query)
+                | Q(member_profile__bio__icontains=query)
+                | Q(member_profile__career_interests__icontains=query)
+            )
+
+        members = members.distinct().order_by("username")[:50]
 
         experiences = Experience.objects.filter(
-            Q(title__icontains=query) | Q(content__icontains=query),
             status=Experience.Status.APPROVED,
-        ).order_by("-created_at")[:10]
+        )
+        posts = CommunityPost.objects.all()
 
-        posts = CommunityPost.objects.filter(
-            Q(content__icontains=query) | Q(category__icontains=query)
-        ).order_by("-created_at")[:10]
+        if query:
+            experiences = experiences.filter(
+                Q(title__icontains=query) | Q(content__icontains=query)
+            )
+            posts = posts.filter(
+                Q(content__icontains=query) | Q(category__icontains=query)
+            )
+
+        experiences = experiences.order_by("-created_at")[:10]
+        posts = posts.order_by("-created_at")[:10]
 
         return Response({
             "members": [
@@ -51,6 +56,10 @@ class SearchView(APIView):
                     "id": member.id,
                     "username": member.username,
                     "name": member.get_full_name() or member.username,
+                    "round": getattr(member.member_profile, "career_club_round", None) if hasattr(member, "member_profile") else None,
+                    "skills": member.member_profile.skills if hasattr(member, "member_profile") else "",
+                    "interests": member.member_profile.career_interests if hasattr(member, "member_profile") else "",
+                    "is_demo": member.username.startswith("demo_"),
                 }
                 for member in members
             ],

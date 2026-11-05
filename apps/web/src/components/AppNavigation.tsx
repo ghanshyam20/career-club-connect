@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import "./AppNavigation.css";
 
 const navigation = [
@@ -19,6 +19,7 @@ const navigation = [
 
 export default function AppNavigation() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isModerator, setIsModerator] = useState(false);
 
   useEffect(() => {
@@ -51,8 +52,38 @@ export default function AppNavigation() {
       ]
     : navigation;
 
+  const isDetailPage =
+    pathname.startsWith("/members/") ||
+    pathname.startsWith("/coffee-buddy/") && pathname !== "/coffee-buddy";
+
   return (
     <>
+      <header className="app-mobile-header">
+        {isDetailPage ? (
+          <button
+            type="button"
+            className="app-mobile-back"
+            onClick={() => {
+              if (pathname.startsWith("/coffee-buddy/")) {
+                router.push("/coffee-buddy");
+              } else {
+                router.push("/search");
+              }
+            }}
+            aria-label="Back to previous section"
+          >
+            <span aria-hidden="true">‹</span>
+            Back
+          </button>
+        ) : (
+          <Link href="/dashboard" className="app-mobile-brand">
+            Career Club <strong>Connect</strong>
+          </Link>
+        )}
+        <Link href="/profile" className="app-mobile-profile">
+          My profile
+        </Link>
+      </header>
       <aside className="app-sidebar" aria-label="Main navigation">
         <Link className="app-brand" href="/dashboard">
           <span className="app-brand-mark">CC</span>

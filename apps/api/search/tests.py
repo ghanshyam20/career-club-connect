@@ -21,7 +21,12 @@ class SearchTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["members"], [])
+        self.assertTrue(
+            any(
+                member["username"] == "testmember"
+                for member in response.json()["members"]
+            )
+        )
 
     def test_member_search(self):
         self.client.force_login(self.user)
@@ -60,3 +65,45 @@ class SearchTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.get(self.url, {"q": "x" * 101})
         self.assertEqual(response.status_code, 400)
+
+    def test_empty_query_returns_approved_experiences(self):
+        Experience.objects.create(
+            author=self.user,
+            title="Approved interview",
+            content="A useful interview story",
+            category="interview",
+            status=Experience.Status.APPROVED,
+        )
+        Experience.objects.create(
+            author=self.user,
+            title="Unapproved interview",
+            content="Not publicly visible",
+            category="interview",
+            status=Experience.Status.PENDING,
+        )
+
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["experiences"]), 1)
+        self.assertEqual(
+            response.json()["experiences"][0]["title"],
+            "Approved interview",
+        )
+
+    def test_empty_query_returns_community_posts(self):
+        CommunityPost.objects.create(
+            author=self.user,
+            content="Looking for career advice",
+        )
+
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["posts"]), 1)
+        self.assertEqual(
+            response.json()["posts"][0]["excerpt"],
+            "Looking for career advice",
+        )

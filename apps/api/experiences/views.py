@@ -36,3 +36,15 @@ class MyExperiencesView(generics.ListAPIView):
             )
             .select_related("author")
         )
+
+
+
+class ExperienceDetailView(generics.RetrieveAPIView):
+    serializer_class = ExperienceSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "pk"
+
+    def get_queryset(self):
+        return Experience.objects.filter(
+            status=Experience.Status.APPROVED
+        ).select_related("author")

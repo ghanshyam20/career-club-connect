@@ -139,3 +139,29 @@
     font-size: 23px;
   }
 }
+
+
+.member-experience-link {
+  color: #102b50;
+  text-decoration: none;
+}
+
+.member-experience-link:hover {
+  color: #1967df;
+  text-decoration: underline;
+}
+
+.member-experience-link:focus-visible {
+  outline: 3px solid #1967df;
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+
+.member-content-card {
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.member-content-card:hover {
+  border-color: #bfd4f7;
+  box-shadow: 0 8px 22px rgba(16, 43, 80, .05);
+}
